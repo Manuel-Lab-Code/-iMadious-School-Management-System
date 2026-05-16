@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Student Management | EduPortal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: #1E40AF;
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 5px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: white;
+      color: #1E40AF;
+    }
+
+    /* Tab Navigation */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      color: #1E40AF;
+      border-bottom-color: #1E40AF;
+    }
+
+    .tab-btn:hover {
+      color: #1E40AF;
+    }
+
+    /* Content Sections */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Students List */
+    .students-wrapper {
+      display: flex;
+      gap: 20px;
+    }
+
+    .students-list {
+      flex: 0 0 450px;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      padding: 15px;
+    }
+
+    .students-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .students-list::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .student-item {
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .student-item:hover {
+      background: #F8FAFC;
+      border-color: #1E40AF;
+    }
+
+    .student-item.active {
+      background: #1E40AF;
+      color: white;
+      border-color: #1E40AF;
+    }
+
+    .student-item-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .student-item-details {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* Edit Form */
+    .edit-form-wrapper {
+      flex: 1;
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .edit-form-wrapper::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .edit-form-wrapper::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .no-student {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .no-student-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1E40AF;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #1E40AF;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #1E40AF;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    /* Messages */
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      border-left: 4px solid;
+    }
+
+    .alert-error {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #c62828;
+    }
+
+    .alert-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-color: #2e7d32;
+    }
+
+    .alert-info {
+      background: #e3f2fd;
+      color: #1565c0;
+      border-color: #1565c0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Buttons */
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button[type="submit"],
+    .btn-save,
+    .btn-cancel,
+    .btn-delete,
+    .btn-reset {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-save {
+      background: #1E40AF;
+      color: white;
+      flex: 1;
+    }
+
+    .btn-save:hover {
+      background: #1E3A8A;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(30, 64, 175, 0.3);
+    }
+
+    .btn-save:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-cancel {
+      background: #f0f0f0;
+      color: #333;
+      flex: 1;
+    }
+
+    .btn-cancel:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-delete {
+      background: #f44336;
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .btn-delete:hover {
+      background: #d32f2f;
+    }
+
+    .btn-reset {
+      background: #FF9800;
+      color: white;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .btn-reset:hover {
+      background: #E68900;
+    }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1E40AF;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .students-wrapper {
+        flex-direction: column;
+      }
+
+      .students-list {
+        flex: 1;
+        max-height: 400px;
+      }
+
+      .edit-form-wrapper {
+        max-height: 600px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-box {
+      margin-bottom: 15px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .student-count {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>🛡️ Admin Dashboard - Student Management</h1>
+        <p>View and edit student profiles, manage departments, and payment status</p>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('students')">👥 Students</button>
+      <button class="tab-btn" onclick="switchTab('help')">❓ Help</button>
+    </div>
+
+    <!-- Students Management Tab -->
+    <div id="students" class="tab-content active">
+      <div class="students-wrapper">
+        <!-- Students List -->
+        <div class="students-list">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="filterStudents()">
+          </div>
+          <div class="student-count"><span id="studentCount">0</span> students</div>
+          <div id="studentsList"></div>
+          <div class="loading" id="listLoading">
+            <div class="spinner"></div>
+            <p>Loading students...</p>
+          </div>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="edit-form-wrapper">
+          <div id="noStudent" class="no-student">
+            <div class="no-student-icon">👈</div>
+            <p>Select a student from the list to edit their profile</p>
+          </div>
+
+          <form id="editForm" class="hidden" onsubmit="handleSaveStudent(event)">
+            <div class="alert alert-info hidden" id="editInfo">
+              Click "Save Changes" after making updates
+            </div>
+
+            <div class="alert alert-error hidden" id="editError"></div>
+            <div class="alert alert-success hidden" id="editSuccess"></div>
+
+            <!-- Personal Information -->
+            <div class="form-section">
+              <div class="form-section-title">Personal Information</div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" id="editFirstName" required>
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" id="editLastName" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="editEmail" required>
+              </div>
+
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="editUsername" required>
+              </div>
+
+              <div class="form-group">
+                <label>Parent/Guardian Phone Number</label>
+                <input type="tel" id="editParentPhone">
+              </div>
+            </div>
+
+            <!-- Academic Information -->
+            <div class="form-section">
+              <div class="form-section-title">Academic Information</div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Class/Grade</label>
+                  <select id="editClass" onchange="handleClassChange()">
+                    <option value="">Select Class</option>
+                    <option value="JSS1">JSS 1</option>
+                    <option value="JSS2">JSS 2</option>
+                    <option value="JSS3">JSS 3</option>
+                    <option value="SSS1">SSS 1</option>
+                    <option value="SSS2">SSS 2</option>
+                    <option value="SSS3">SSS 3</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="deptGroup" style="display: none;">
+                  <label>Department <span style="color: #f44336;">*</span></label>
+                  <select id="editDepartment" onchange="handleDepartmentChange()">
+                    <option value="">Select Department</option>
+                    <option value="SCIENCE">SCIENCE</option>
+                    <option value="ART">ART</option>
+                    <option value="COMMERCIAL">COMMERCIAL</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="subjectsInfo" class="alert alert-info hidden" style="margin-top: 10px;">
+                <strong>Subjects:</strong> <span id="subjectsDisplay"></span>
+              </div>
+            </div>
+
+            <!-- Security -->
+            <div class="form-section">
+              <div class="form-section-title">Security</div>
+
+              <div class="form-group">
+                <label>Change Password <span style="font-size: 11px; color: #999;">(Leave blank to keep
+                    current)</span></label>
+                <input type="password" id="editPassword" placeholder="Enter new password or leave blank">
+              </div>
+            </div>
+
+            <!-- Payment Status -->
+            <div class="form-section">
+              <div class="form-section-title">Payment Status</div>
+
+              <div class="form-group">
+                <label>Fee Payment Status</label>
+                <select id="editPaymentStatus">
+                  <option value="unpaid">Unpaid</option>
+                  <option value="partial">Partially Paid</option>
+                  <option value="paid">Fully Paid</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+              <button type="submit" class="btn-save">💾 Save Changes</button>
+              <button type="button" class="btn-cancel" onclick="resetEditForm()">❌ Cancel</button>
+            </div>
+
+            <button type="button" class="btn-delete" onclick="handleDeleteStudent()">🗑️ Delete Student</button>
+
+            <button type="button" class="btn-reset" onclick="handleResetPassword()">🔑 Reset Password</button>
+
+            <div class="loading" id="editLoading">
+              <div class="spinner"></div>
+              <p>Saving changes...</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Tab -->
+    <div id="help" class="tab-content">
+      <div style="background: white; padding: 30px; border-radius: 8px; max-width: 800px;">
+        <h2 style="color: #1E40AF; margin-bottom: 20px;">📖 Student Management Guide</h2>
+
+        <h3 style="margin-top: 20px; margin-bottom: 10px;">How to Edit a Student Profile</h3>
+        <ol style="margin-left: 20px; line-height: 1.8;">
+          <li>Click on a student from the list on the left</li>
+          <li>The student's information will load in the edit form</li>
+          <li>Make any changes you need to the following fields:
+            <ul style="margin-left: 20px; margin-top: 8px;">
+              <li><strong>First Name, Last Name:</strong> Student's name</li>
+              <li><strong>Email:</strong> Must be unique</li>
+              <li><strong>Username:</strong> Must be unique</li>
+              <li><strong>Parent Phone:</strong> Guardian contact number</li>
+              <li><strong>Class/Grade:</strong> JSS1-JSS3 or SSS1-SSS3</li>
+              <li><strong>Department:</strong> Only for SSS students (SCIENCE, ART, COMMERCIAL)</li>
+              <li><strong>Password:</strong> Leave blank to keep current password</li>
+              <li><strong>Payment Status:</strong> Unpaid, Partially Paid, or Fully Paid</li>
+            </ul>
+          </li>
+          <li>Click <strong>"Save Changes"</strong> to update the profile</li>
+        </ol>
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">⚠️ Important Notes</h3>
+        <ul style="margin-left: 20px; line-height: 1.8; color: #666;">
+          <li>Username and Email must be <strong>unique</strong> across all students</li>
+          <li>When changing a student from JSS to SSS, you <strong>must select a department</strong></li>
+          <li>When changing a student from SSS to JSS, the department is cleared</li>
+          <li>Subjects are <strong>automatically assigned</strong> based on the department selected</li>
+          <li>Passwords are hashed and never displayed for security</li>
+          <li>Leave password field blank if you don't want to change it</li>
+        </ul>
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">🚨 Deleting Students</h3>
+        <p style="color: #666; line-height: 1.8;">
+          Click the <strong>"Delete Student"</strong> button to permanently remove a student. This action cannot be
+          undone and will also remove all their records (fees, results, etc.).
+        </p>
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">� Resetting Student Passwords</h3>
+        <p style="color: #666; line-height: 1.8;">
+          If a student forgets their password, click the <strong>"Reset Password"</strong> button. A temporary password
+          will be generated and sent to their email address. They can use this temporary password to log in and then
+          change it to something they'll remember.
+        </p>
+        <div
+          style="background: #e3f2fd; border-left: 4px solid #1565c0; padding: 12px; border-radius: 4px; margin: 10px 0;">
+          <p style="color: #1565c0; margin: 0; font-size: .9rem;"><strong>💡 Note:</strong> The temporary password is
+            sent via email. Make sure the student's email is correct.</p>
+        </div>
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">�🔍 Searching Students</h3>
+        <p style="color: #666; line-height: 1.8;">
+          Use the search box to quickly find a student by name or email address.
+        </p>
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px;">✅ Departments & Subjects</h3>
+        <div style="background: #f5f7ff; padding: 15px; border-radius: 6px; margin-top: 10px;">
+          <p style="font-weight: 600; margin-bottom: 10px;">SCIENCE (9 subjects):</p>
+          <p style="font-size: 13px; color: #666;">English Language, Mathematics, Biology, Chemistry, Physics, Further
+            Math, Agric, ICT, Civic Education</p>
+
+          <p style="font-weight: 600; margin-top: 15px; margin-bottom: 10px;">ART (9 subjects):</p>
+          <p style="font-size: 13px; color: #666;">English Language, Mathematics, Literature in English, Government,
+            Economics, CRS or IRS, History, ICT, Civic Education</p>
+
+          <p style="font-weight: 600; margin-top: 15px; margin-bottom: 10px;">COMMERCIAL (10 subjects):</p>
+          <p style="font-size: 13px; color: #666;">English Language, Mathematics, Accounting, Commerce, Economics, ICT,
+            CRS or IRS, Civic Education, Marketing</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let allStudents = [];
+    let currentStudentId = null;
+    let departments = {
+      SCIENCE: ['English Language', 'Mathematics', 'Biology', 'Chemistry', 'Physics', 'Further Math', 'Agric', 'ICT', 'Civic Education'],
+      ART: ['English Language', 'Mathematics', 'Literature in English', 'Government', 'Economics', 'CRS or IRS', 'History', 'ICT', 'Civic Education'],
+      COMMERCIAL: ['English Language', 'Mathematics', 'Accounting', 'Commerce', 'Economics', 'ICT', 'CRS or IRS', 'Civic Education', 'Marketing']
+    };
+
+    const API_BASE = '/api';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('edu_token');
+      if (!token) {
+        window.location.href = '/index.html';
+        return;
+      }
+      loadStudents();
+    });
+
+    // Load all students
+    async function loadStudents() {
+      try {
+        document.getElementById('listLoading').style.display = 'block';
+        const response = await fetch(`${API_BASE}/students`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('edu_token')}` }
+        });
+
+        if (response.status === 403) {
+          alert('You do not have permission to access this page.');
+          window.location.href = '/index.html';
+          return;
+        }
+
+        if (!response.ok) throw new Error('Failed to load students');
+
+        allStudents = await response.json();
+        displayStudents(allStudents);
+      } catch (error) {
+        showError('Failed to load students: ' + error.message);
+      } finally {
+        document.getElementById('listLoading').style.display = 'none';
+      }
+    }
+
+    // Display students in list
+    function displayStudents(students) {
+      const listDiv = document.getElementById('studentsList');
+      listDiv.innerHTML = '';
+
+      if (students.length === 0) {
+        listDiv.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No students found</p>';
+        return;
+      }
+
+      students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'student-item';
+        div.onclick = () => loadStudentForEditing(student._id);
+
+        const classType = student.class.startsWith('JSS') ? '👧' : '👨';
+        const deptBadge = student.department ? ` • ${student.department}` : '';
+
+        div.innerHTML = `
+          <div class="student-item-name">${classType} ${student.firstName} ${student.lastName}</div>
+          <div class="student-item-details">${student.class}${deptBadge}</div>
+          <div class="student-item-details">📧 ${student.email}</div>
+        `;
+
+        listDiv.appendChild(div);
+      });
+
+      document.getElementById('studentCount').textContent = students.length;
+    }
+
+    // Filter students by search
+    function filterStudents() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allStudents.filter(s =>
+        s.firstName.toLowerCase().includes(query) ||
+        s.lastName.toLowerCase().includes(query) ||
+        s.email.toLowerCase().includes(query) ||
+        s.username.toLowerCase().includes(query)
+      );
+      displayStudents(filtered);
+    }
+
+    // Load student for editing
+    async function loadStudentForEditing(studentId) {
+      try {
+        const response = await fetch(`${API_BASE}/students/${studentId}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('edu_token')}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to load student');
+
+        const student = await response.json();
+        currentStudentId = studentId;
+
+        // Populate form
+        document.getElementById('editFirstName').value = student.firstName;
+        document.getElementById('editLastName').value = student.lastName;
+        document.getElementById('editEmail').value = student.email;
+        document.getElementById('editUsername').value = student.username;
+        document.getElementById('editParentPhone').value = student.parentPhoneNumber || '';
+        document.getElementById('editClass').value = student.class;
+        document.getElementById('editPassword').value = '';
+
+        // Set department visibility and value
+        handleClassChange();
+        if (student.department) {
+          document.getElementById('editDepartment').value = student.department;
+          handleDepartmentChange();
+        }
+
+        // Set payment status
+        document.getElementById('editPaymentStatus').value = student.fee?.status || 'unpaid';
+
+        // Show form, hide no-student message
+        document.getElementById('noStudent').classList.add('hidden');
+        document.getElementById('editForm').classList.remove('hidden');
+
+        // Highlight selected student
+        document.querySelectorAll('.student-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        event.target.closest('.student-item')?.classList.add('active');
+
+        clearAlerts();
+      } catch (error) {
+        showEditError(error.message);
+      }
+    }
+
+    // Handle class change
+    function handleClassChange() {
+      const classVal = document.getElementById('editClass').value;
+      const isSS = classVal.startsWith('SSS');
+
+      document.getElementById('deptGroup').style.display = isSS ? 'block' : 'none';
+      document.getElementById('subjectsInfo').classList.add('hidden');
+
+      if (!isSS) {
+        document.getElementById('editDepartment').value = '';
+      }
+    }
+
+    // Handle department change
+    function handleDepartmentChange() {
+      const dept = document.getElementById('editDepartment').value;
+      if (dept && departments[dept]) {
+        document.getElementById('subjectsDisplay').textContent = departments[dept].join(', ');
+        document.getElementById('subjectsInfo').classList.remove('hidden');
+      }
+    }
+
+    // Save student changes
+    async function handleSaveStudent(e) {
+      e.preventDefault();
+
+      const classVal = document.getElementById('editClass').value;
+      if (!classVal) {
+        showEditError('Please select a class');
+        return;
+      }
+
+      if (classVal.startsWith('SSS')) {
+        const deptVal = document.getElementById('editDepartment').value;
+        if (!deptVal) {
+          showEditError('Please select a department for SSS students');
+          return;
+        }
+      }
+
+      const updates = {
+        firstName: document.getElementById('editFirstName').value,
+        lastName: document.getElementById('editLastName').value,
+        email: document.getElementById('editEmail').value,
+        username: document.getElementById('editUsername').value,
+        parentPhoneNumber: document.getElementById('editParentPhone').value,
+        class: classVal,
+        paymentStatus: document.getElementById('editPaymentStatus').value
+      };
+
+      if (classVal.startsWith('SSS')) {
+        updates.department = document.getElementById('editDepartment').value;
+      }
+
+      const password = document.getElementById('editPassword').value;
+      if (password) {
+        updates.password = password;
+      }
+
+      try {
+        document.getElementById('editLoading').style.display = 'block';
+        const response = await fetch(`${API_BASE}/students/${currentStudentId}/admin-edit`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('edu_token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updates)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+
+        showEditSuccess('Student profile updated successfully! ✅');
+        loadStudents(); // Refresh list
+      } catch (error) {
+        showEditError(error.message);
+      } finally {
+        document.getElementById('editLoading').style.display = 'none';
+      }
+    }
+
+    // Delete student
+    async function handleDeleteStudent() {
+      if (!confirm('⚠️ Are you sure you want to delete this student? This action cannot be undone and will also remove all their records.')) {
+        return;
+      }
+
+      try {
+        document.getElementById('editLoading').style.display = 'block';
+        const response = await fetch(`${API_BASE}/students/${currentStudentId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('edu_token')}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete student');
+
+        showEditSuccess('Student deleted successfully! 🗑️');
+        setTimeout(() => {
+          currentStudentId = null;
+          document.getElementById('editForm').classList.add('hidden');
+          document.getElementById('noStudent').classList.remove('hidden');
+          loadStudents();
+        }, 1500);
+      } catch (error) {
+        showEditError(error.message);
+      } finally {
+        document.getElementById('editLoading').style.display = 'none';
+      }
+    }
+
+    // Reset password for student
+    async function handleResetPassword() {
+      const studentName = `${document.getElementById('editFirstName').value} ${document.getElementById('editLastName').value}`.trim();
+      if (!confirm(`🔑 Send a password reset link to ${studentName}? They will receive a temporary password via email.`)) {
+        return;
+      }
+
+      try {
+        document.getElementById('editLoading').style.display = 'block';
+        const response = await fetch(`${API_BASE}/auth/admin/reset-password`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('edu_token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId: currentStudentId })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to reset password');
+        }
+
+        const data = await response.json();
+        showEditSuccess(`✅ Password reset successful! Temporary password sent to ${data.userDetails.email}`);
+      } catch (error) {
+        showEditError(error.message);
+      } finally {
+        document.getElementById('editLoading').style.display = 'none';
+      }
+    }
+
+    // Reset edit form
+    function resetEditForm() {
+      if (currentStudentId) {
+        loadStudentForEditing(currentStudentId);
+      }
+    }
+
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Alerts
+    function showEditError(message) {
+      document.getElementById('editError').textContent = message;
+      document.getElementById('editError').classList.remove('hidden');
+      document.getElementById('editSuccess').classList.add('hidden');
+    }
+
+    function showEditSuccess(message) {
+      document.getElementById('editSuccess').textContent = message;
+      document.getElementById('editSuccess').classList.remove('hidden');
+      document.getElementById('editError').classList.add('hidden');
+    }
+
+    function showError(message) {
+      console.error(message);
+      alert(message);
+    }
+
+    function clearAlerts() {
+      document.getElementById('editError').classList.add('hidden');
+      document.getElementById('editSuccess').classList.add('hidden');
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('edu_token');
+      window.location.href = '/index.html';
+    }
+  </script>
+</body>
+
+</html>

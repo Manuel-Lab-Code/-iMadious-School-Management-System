@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPortal — Developer Control Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Base Reset & Variables ─────────────────────────── */
+        :root {
+            --blue: #007bff;
+            --blue-dark: #0056b3;
+            --red: #dc3545;
+            --red-dark: #c82333;
+            --green: #28a745;
+            --grey: #6c757d;
+            --grey-dark: #545b62;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #dee2e6;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+
+        /* ── Layout ─────────────────────────────────────────── */
+        .developer-container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+        /* ── Header ─────────────────────────────────────────── */
+        .dev-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 28px; padding-bottom: 16px;
+            border-bottom: 3px solid var(--blue);
+        }
+        .dev-header h1 { color: var(--text); font-size: 22px; font-weight: 700; }
+        .dev-header p  { margin: 4px 0 0; color: var(--text-muted); font-size: 13px; }
+        .logout-btn {
+            background: var(--red); color: #fff; border: none;
+            padding: 8px 18px; border-radius: var(--radius);
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            transition: background .2s;
+        }
+        .logout-btn:hover { background: var(--red-dark); }
+
+        /* ── Stats Grid ─────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; padding: 22px 20px; border-radius: var(--radius);
+            text-align: center; box-shadow: var(--shadow);
+        }
+        .stat-card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; opacity: .85; margin-bottom: 8px; }
+        .stat-number  { font-size: 30px; font-weight: 700; }
+
+        /* ── Sections ───────────────────────────────────────── */
+        .form-section, .list-section {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px; margin-bottom: 28px;
+            box-shadow: var(--shadow);
+        }
+        .form-section h2, .list-section h2 {
+            color: var(--text); font-size: 16px; font-weight: 700;
+            border-bottom: 2px solid var(--blue); padding-bottom: 10px; margin-bottom: 20px;
+        }
+
+        /* ── Form Grid ──────────────────────────────────────── */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 600; font-size: 13px; color: #333; }
+        .form-group input, .form-group textarea {
+            padding: 9px 12px; border: 1px solid var(--border); border-radius: 5px;
+            font-family: inherit; font-size: 13px; transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(0,123,255,.18);
+        }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn {
+            padding: 9px 18px; border: none; border-radius: 5px;
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            transition: background .2s, transform .1s;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary   { background: var(--blue);  color: #fff; }
+        .btn-primary:hover   { background: var(--blue-dark); }
+        .btn-success   { background: var(--green); color: #fff; }
+        .btn-success:hover   { background: #218838; }
+        .btn-warning   { background: #fd7e14; color: #fff; }
+        .btn-warning:hover   { background: #e8690f; }
+        .btn-danger    { background: var(--red);   color: #fff; }
+        .btn-danger:hover    { background: var(--red-dark); }
+        .btn-secondary { background: var(--grey);  color: #fff; }
+        .btn-secondary:hover { background: var(--grey-dark); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+        /* ── Alerts ─────────────────────────────────────────── */
+        .alert { padding: 12px 16px; margin-bottom: 18px; border-radius: 5px; display: none; font-size: 13px; }
+        .alert.show { display: block; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        /* ── Schools Table ──────────────────────────────────── */
+        .table-wrapper { overflow-x: auto; }
+        .schools-table { width: 100%; border-collapse: collapse; margin-top: 4px; min-width: 900px; }
+        .schools-table thead { background: var(--blue); color: #fff; }
+        .schools-table th { padding: 11px 12px; text-align: left; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .schools-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .schools-table tbody tr:hover { background: #f0f4ff; }
+        .schools-table .action-buttons { display: flex; gap: 6px; flex-wrap: nowrap; }
+
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 600;
+        }
+        .badge-blue   { background: #d1ecf1; color: #0c5460; }
+        .badge-green  { background: #d4edda; color: #155724; }
+        .badge-yellow { background: #fff3cd; color: #856404; }
+        .badge-red    { background: #f8d7da; color: #721c24; }
+
+        .school-name { font-weight: 600; }
+        .school-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+        /* ── Modal ──────────────────────────────────────────── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.5); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #fff; border-radius: var(--radius);
+            padding: 28px; width: 92%; max-width: 720px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn .2s ease;
+        }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 17px; font-weight: 700; color: var(--text); }
+        .modal-close {
+            background: none; border: none; font-size: 22px;
+            cursor: pointer; color: var(--text-muted); line-height: 1;
+            padding: 2px 6px; border-radius: 4px;
+        }
+        .modal-close:hover { background: #f0f0f0; }
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; border-top: 1px solid var(--border); padding-top: 18px; }
+
+        /* ── Confirm Dialog ─────────────────────────────────── */
+        .confirm-box {
+            background: #fff; border-radius: var(--radius);
+            padding: 28px; width: 92%; max-width: 420px;
+            box-shadow: var(--shadow-lg); text-align: center;
+        }
+        .confirm-box .icon { font-size: 36px; margin-bottom: 12px; }
+        .confirm-box h3  { font-size: 17px; margin-bottom: 8px; }
+        .confirm-box p   { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+        .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+        /* ── Search Bar ─────────────────────────────────────── */
+        .list-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .search-input {
+            padding: 8px 14px; border: 1px solid var(--border); border-radius: 5px;
+            font-size: 13px; width: 260px;
+        }
+        .search-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,123,255,.15); }
+
+        /* ── Empty / Loading ────────────────────────────────── */
+        .empty-state { text-align: center; padding: 36px 20px; color: var(--text-muted); }
+        .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+        /* ── Responsive ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .developer-container { padding: 14px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="developer-container">
+
+    <!-- Header -->
+    <div class="dev-header">
+        <div>
+            <h1>🔧 EduPortal Developer Control Panel</h1>
+            <p id="devStatus">Developer Key: <strong>Required</strong></p>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- ── Auth Section ──────────────────────────────────── -->
+    <div id="authSection" class="form-section">
+        <h2>Developer Authentication</h2>
+        <p style="margin-bottom:16px;color:var(--text-muted);">Enter your developer key to access the control panel.</p>
+        <div id="authAlert" class="alert"></div>
+        <div class="form-grid" style="max-width:360px;">
+            <div class="form-group">
+                <label for="developerKey">Developer Key</label>
+                <input type="password" id="developerKey" placeholder="Enter developer key"
+                    onkeydown="if(event.key==='Enter') authenticateDeveloper()">
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="authenticateDeveloper()">Authenticate</button>
+    </div>
+
+    <!-- ── Main Dashboard ───────────────────────────────── -->
+    <div id="mainDashboard" style="display:none;">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Schools</h3>
+                <p class="stat-number" id="statSchools">—</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg,#f093fb,#f5576c);">
+                <h3>Total Students</h3>
+                <p class="stat-number" id="statStudents">—</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">
+                <h3>Total Teachers</h3>
+                <p class="stat-number" id="statTeachers">—</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">
+                <h3>Total Exams</h3>
+                <p class="stat-number" id="statExams">—</p>
+            </div>
+        </div>
+
+        <!-- Register New School -->
+        <div class="form-section">
+            <h2>➕ Register New School</h2>
+            <div id="registerAlert" class="alert"></div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="schoolName">School Name *</label>
+                    <input type="text" id="schoolName" placeholder="e.g., Central Secondary School">
+                </div>
+                <div class="form-group">
+                    <label for="schoolEmail">Email *</label>
+                    <input type="email" id="schoolEmail" placeholder="school@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="schoolPhone">Phone *</label>
+                    <input type="tel" id="schoolPhone" placeholder="+234 80 1234 5678">
+                </div>
+                <div class="form-group">
+                    <label for="schoolCity">City *</label>
+                    <input type="text" id="schoolCity" placeholder="e.g., Lagos">
+                </div>
+                <div class="form-group">
+                    <label for="schoolAddress">Address *</label>
+                    <input type="text" id="schoolAddress" placeholder="Street address">
+                </div>
+                <div class="form-group">
+                    <label for="principalName">Principal Name *</label>
+                    <input type="text" id="principalName" placeholder="Principal's full name">
+                </div>
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username *</label>
+                    <input type="text" id="adminUsername" placeholder="admin username for this school">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password *</label>
+                    <input type="password" id="adminPassword" placeholder="Min 6 characters">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="registerSchool()">Register School</button>
+        </div>
+
+        <!-- Schools List -->
+        <div class="list-section">
+            <h2>🏫 Registered Schools</h2>
+            <div class="list-toolbar">
+                <input type="text" class="search-input" id="schoolSearch"
+                    placeholder="🔍 Search schools..." oninput="filterSchools()">
+                <button class="btn btn-secondary btn-sm" onclick="loadSchools()">↻ Refresh</button>
+            </div>
+            <div id="schoolsContainer" class="empty-state">
+                <div class="icon">⏳</div>
+                <p>Loading schools...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Edit Modal ──────────────────────────────────────── -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>✏️ Edit School</h2>
+            <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <div id="editAlert" class="alert"></div>
+        <input type="hidden" id="editSchoolId">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="editName">School Name *</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label for="editEmail">Email *</label>
+                <input type="email" id="editEmail">
+            </div>
+            <div class="form-group">
+                <label for="editPhone">Phone *</label>
+                <input type="tel" id="editPhone">
+            </div>
+            <div class="form-group">
+                <label for="editCity">City *</label>
+                <input type="text" id="editCity">
+            </div>
+            <div class="form-group">
+                <label for="editAddress">Address *</label>
+                <input type="text" id="editAddress">
+            </div>
+            <div class="form-group">
+                <label for="editPrincipal">Principal Name *</label>
+                <input type="text" id="editPrincipal">
+            </div>
+            <div class="form-group">
+                <label for="editAdminUsername">Admin Username *</label>
+                <input type="text" id="editAdminUsername">
+            </div>
+            <div class="form-group">
+                <label for="editAdminPassword">New Admin Password</label>
+                <input type="password" id="editAdminPassword" placeholder="Leave blank to keep current">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            <button class="btn btn-success" onclick="saveSchoolEdit()">💾 Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Confirm Modal ───────────────────────────────────── -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="confirm-box">
+        <div class="icon" id="confirmIcon">⚠️</div>
+        <h3 id="confirmTitle">Are you sure?</h3>
+        <p id="confirmMessage">This action cannot be undone.</p>
+        <div class="confirm-actions">
+            <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+            <button class="btn btn-danger" id="confirmBtn" onclick="executeConfirm()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script src="developer.js"></script>
+</body>
+</html>

@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Teacher Management | EduPortal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: #1E40AF;
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 5px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: white;
+      color: #1E40AF;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      color: #1E40AF;
+      border-bottom-color: #1E40AF;
+    }
+
+    .tab-btn:hover {
+      color: #1E40AF;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .teachers-wrapper {
+      display: flex;
+      gap: 20px;
+    }
+
+    .teachers-list {
+      flex: 0 0 400px;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 15px;
+    }
+
+    .teachers-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .teachers-list::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .teacher-item {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .teacher-item:hover {
+      background: #F8FAFC;
+      border-color: #1E40AF;
+    }
+
+    .teacher-item.active {
+      background: #1E40AF;
+      color: white;
+      border-color: #1E40AF;
+    }
+
+    .teacher-item-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .teacher-item-subject {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .edit-form-wrapper {
+      flex: 1;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 20px;
+    }
+
+    .edit-form-wrapper::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .edit-form-wrapper::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .no-teacher {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1E40AF;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #1E40AF;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.3s;
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="tel"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #1E40AF;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .btn-save,
+    .btn-cancel,
+    .btn-delete,
+    .btn-reset {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-save {
+      background: #1E40AF;
+      color: white;
+      flex: 1;
+    }
+
+    .btn-save:hover {
+      background: #1E3A8A;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(30, 64, 175, 0.3);
+    }
+
+    .btn-save:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-cancel {
+      background: #f0f0f0;
+      color: #333;
+      margin-right: 10px;
+    }
+
+    .btn-cancel:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-delete {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+    }
+
+    .btn-delete:hover {
+      background: #fecaca;
+    }
+
+    .btn-reset {
+      background: #FF9800;
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #E68900;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .search-box {
+      margin-bottom: 15px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .salary-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .salary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .salary-header h3 {
+      color: #1E40AF;
+      font-size: 16px;
+    }
+
+    .btn-add-payment {
+      background: #1E40AF;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .btn-add-payment:hover {
+      background: #1E3A8A;
+    }
+
+    .payment-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .payment-table th {
+      background: #F8FAFC;
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+      color: #1E40AF;
+      border: 1px solid var(--border);
+    }
+
+    .payment-table td {
+      padding: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .payment-table tr:hover {
+      background: #F8FAFC;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-paid {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-delayed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1E40AF;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-message {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      border-left: 4px solid #dc2626;
+      font-size: 13px;
+    }
+
+    .success-message {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      border-left: 4px solid #15803d;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>👨‍🏫 Teacher Management</h1>
+        <p>Manage teacher profiles, approvals, and salary payments</p>
+      </div>
+      <button class="btn-logout" onclick="logout()">← Back to Dashboard</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('teachers')">All Teachers</button>
+      <button class="tab-btn" onclick="switchTab('pending')">Pending Approvals</button>
+      <button class="tab-btn" onclick="switchTab('add-teacher')">Add Teacher</button>
+      <button class="tab-btn" onclick="switchTab('salary')">Salary Payments</button>
+    </div>
+
+    <!-- ALL TEACHERS TAB -->
+    <div id="teachers" class="tab-content active">
+      <div class="teachers-wrapper">
+        <div class="teachers-list">
+          <div class="search-box">
+            <input type="text" id="searchTeachers" placeholder="Search by name or subject..."
+              onkeyup="filterTeachers()">
+          </div>
+          <div id="teachersList"></div>
+        </div>
+        <div class="edit-form-wrapper">
+          <div id="editFormContent">
+            <div class="no-teacher">
+              <div style="font-size: 48px; margin-bottom: 15px;">👋</div>
+              <p>Select a teacher to view and edit details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING APPROVALS TAB -->
+    <div id="pending" class="tab-content">
+      <div id="pendingApprovals"></div>
+    </div>
+
+    <!-- ADD TEACHER TAB -->
+    <div id="add-teacher" class="tab-content">
+      <div style="max-width: 500px;">
+        <div class="form-section">
+          <div class="form-section-title">Add New Teacher</div>
+          <div id="addTeacherMessage"></div>
+          <form id="addTeacherForm" onsubmit="addTeacher(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="addFirstName" required>
+              </div>
+              <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="addLastName" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="addUsername" required>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="addEmail" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Subject</label>
+                <select id="addSubject" required>
+                  <option value="">Select a subject</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="English">English</option>
+                  <option value="Biology">Biology</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Physics">Physics</option>
+                  <option value="History">History</option>
+                  <option value="Geography">Geography</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Monthly Salary</label>
+                <input type="number" id="addSalary" placeholder="0.00" step="0.01">
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn-save">Add Teacher</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALARY PAYMENTS TAB -->
+    <div id="salary" class="tab-content">
+      <div class="salary-section">
+        <div class="salary-header">
+          <h3>📊 Salary Payment Tracking</h3>
+          <button class="btn-add-payment" onclick="showPaymentForm()">+ Record Payment</button>
+        </div>
+        <table class="payment-table">
+          <thead>
+            <tr>
+              <th>Teacher</th>
+              <th>Month</th>
+              <th>Salary</th>
+              <th>Status</th>
+              <th>Paid On</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="paymentTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    let currentTeacher = null;
+
+    if (!token) {
+      window.location.href = '/index.html';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'teachers') loadTeachers();
+      else if (tabName === 'pending') loadPendingTeachers();
+      else if (tabName === 'salary') loadSalaryPayments();
+    }
+
+    async function loadTeachers() {
+      try {
+        const res = await fetch('/api/teachers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        const list = document.getElementById('teachersList');
+        if (data.teachers.length === 0) {
+          list.innerHTML = '<p style="color: #999; text-align: center;">No teachers found</p>';
+          return;
+        }
+
+        list.innerHTML = data.teachers.map(t => `
+          <div class="teacher-item" onclick="selectTeacher(this, '${t._id}')">
+            <div class="teacher-item-name">${t.firstName} ${t.lastName}</div>
+            <div class="teacher-item-subject">${t.subject || 'No subject'}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading teachers:', err);
+      }
+    }
+
+    function selectTeacher(el, teacherId) {
+      document.querySelectorAll('.teacher-item').forEach(item => item.classList.remove('active'));
+      el.classList.add('active');
+      loadTeacherDetails(teacherId);
+    }
+
+    async function loadTeacherDetails(teacherId) {
+      try {
+        const res = await fetch(`/api/teachers/${teacherId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const teacher = await res.json();
+        currentTeacher = teacher;
+
+        const form = document.getElementById('editFormContent');
+        form.innerHTML = `
+          <div class="form-section">
+            <div class="form-section-title">Teacher Details</div>
+            <div id="editMessage"></div>
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="editFirstName" value="${teacher.firstName || ''}">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="editLastName" value="${teacher.lastName || ''}">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="editEmail" value="${teacher.email || ''}">
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" id="editSubject" value="${teacher.subject || ''}">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Employment Date</label>
+                <input type="date" id="editEmploymentDate" value="${teacher.employmentDate ? new Date(teacher.employmentDate).toISOString().split('T')[0] : ''}">
+              </div>
+              <div class="form-group">
+                <label>Monthly Salary</label>
+                <input type="number" id="editSalary" value="${teacher.salary || 0}" step="0.01">
+              </div>
+            </div>
+            <div class="button-group">
+              <button class="btn-save" onclick="saveTeacherChanges('${teacherId}')">Save Changes</button>
+              <button class="btn-delete" onclick="deleteTeacher('${teacherId}')">Delete Teacher</button>
+              <button class="btn-reset" onclick="resetTeacherPassword('${teacherId}')">🔑 Reset Password</button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        console.error('Error loading teacher details:', err);
+      }
+    }
+
+    async function saveTeacherChanges(teacherId) {
+      try {
+        const response = await fetch(`/api/teachers/${teacherId}/admin-edit`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            firstName: document.getElementById('editFirstName').value,
+            lastName: document.getElementById('editLastName').value,
+            email: document.getElementById('editEmail').value,
+            subject: document.getElementById('editSubject').value,
+            employmentDate: document.getElementById('editEmploymentDate').value,
+            salary: parseFloat(document.getElementById('editSalary').value) || 0
+          })
+        });
+
+        const data = await response.json();
+        const msgDiv = document.getElementById('editMessage');
+        if (response.ok) {
+          msgDiv.innerHTML = '<div class="success-message">✓ Teacher updated successfully</div>';
+          setTimeout(() => loadTeachers(), 1500);
+        } else {
+          msgDiv.innerHTML = `<div class="error-message">✗ ${data.error}</div>`;
+        }
+      } catch (err) {
+        document.getElementById('editMessage').innerHTML = `<div class="error-message">✗ ${err.message}</div>`;
+      }
+    }
+
+    async function deleteTeacher(teacherId) {
+      if (!confirm('⚠️ Delete this teacher and all associated records?')) return;
+
+      try {
+        const response = await fetch(`/api/teachers/${teacherId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          alert('✓ Teacher deleted successfully');
+          loadTeachers();
+          document.getElementById('editFormContent').innerHTML = `
+            <div class="no-teacher">
+              <div style="font-size: 48px; margin-bottom: 15px;">👋</div>
+              <p>Select a teacher to view and edit details</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        alert('✗ Error deleting teacher: ' + err.message);
+      }
+    }
+
+    async function resetTeacherPassword(teacherId) {
+      const teacherName = document.getElementById('editFirstName').value + ' ' + document.getElementById('editLastName').value;
+      if (!confirm(`🔑 Send a password reset link to ${teacherName}? They will receive a temporary password via email.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth/admin/reset-password`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId: teacherId })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert(`✓ Password reset successful! Temporary password sent to ${data.userDetails.email}`);
+        } else {
+          const errorData = await response.json();
+          alert(`✗ ${errorData.message || 'Failed to reset password'}`);
+        }
+      } catch (err) {
+        alert('✗ Error resetting password: ' + err.message);
+      }
+    }
+
+    async function loadPendingTeachers() {
+      try {
+        const res = await fetch('/api/teachers/pending-registrations', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        const container = document.getElementById('pending');
+        if (data.pending.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No pending approvals</p>';
+          return;
+        }
+
+        container.innerHTML = data.pending.map(t => `
+          <div style="background: var(--surface); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+              <div>
+                <div style="font-weight: 600; font-size: 15px;">${t.firstName} ${t.lastName}</div>
+                <div style="font-size: 13px; color: #666; margin-top: 4px;">${t.email}</div>
+                <div style="font-size: 13px; color: #666;">Subject: <strong>${t.subject || 'Not specified'}</strong></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+              <button class="btn-save" onclick="approveTeacher('${t._id}')" style="flex: 1;">✓ Approve</button>
+              <button class="btn-delete" onclick="rejectTeacher('${t._id}')" style="flex: 1;">✗ Reject</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading pending teachers:', err);
+      }
+    }
+
+    async function approveTeacher(teacherId) {
+      try {
+        const response = await fetch(`/api/teachers/${teacherId}/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          alert('✓ Teacher approved');
+          loadPendingTeachers();
+        }
+      } catch (err) {
+        alert('✗ Error: ' + err.message);
+      }
+    }
+
+    async function rejectTeacher(teacherId) {
+      const reason = prompt('Enter rejection reason:');
+      if (!reason) return;
+
+      try {
+        const response = await fetch(`/api/teachers/${teacherId}/reject`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ reason })
+        });
+
+        if (response.ok) {
+          alert('✓ Teacher rejected');
+          loadPendingTeachers();
+        }
+      } catch (err) {
+        alert('✗ Error: ' + err.message);
+      }
+    }
+
+    async function addTeacher(event) {
+      event.preventDefault();
+      try {
+        const response = await fetch('/api/teachers', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            firstName: document.getElementById('addFirstName').value,
+            lastName: document.getElementById('addLastName').value,
+            username: document.getElementById('addUsername').value,
+            email: document.getElementById('addEmail').value,
+            subject: document.getElementById('addSubject').value,
+            salary: parseFloat(document.getElementById('addSalary').value) || 0
+          })
+        });
+
+        const data = await response.json();
+        const msgDiv = document.getElementById('addTeacherMessage');
+        if (response.ok) {
+          msgDiv.innerHTML = '<div class="success-message">✓ Teacher added successfully</div>';
+          document.getElementById('addTeacherForm').reset();
+          setTimeout(() => loadTeachers(), 1500);
+        } else {
+          msgDiv.innerHTML = `<div class="error-message">✗ ${data.error}</div>`;
+        }
+      } catch (err) {
+        document.getElementById('addTeacherMessage').innerHTML = `<div class="error-message">✗ ${err.message}</div>`;
+      }
+    }
+
+    async function loadSalaryPayments() {
+      try {
+        const res = await fetch('/api/teachers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        const tbody = document.getElementById('paymentTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Select a teacher to view salary payments</td></tr>';
+      } catch (err) {
+        console.error('Error loading salary payments:', err);
+      }
+    }
+
+    function filterTeachers() {
+      const query = document.getElementById('searchTeachers').value.toLowerCase();
+      document.querySelectorAll('.teacher-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? 'block' : 'none';
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/admin.html';
+    }
+
+    function showPaymentForm() {
+      alert('Payment recording feature - to be implemented with full salary management system');
+    }
+
+    // Load teachers on page load
+    loadTeachers();
+  </script>
+</body>
+
+</html>

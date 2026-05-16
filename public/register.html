@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPortal - Student Registration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1E40AF;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .header {
+      background: #1E40AF;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .form-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px 25px;
+    }
+
+    /* Scrollbar styling */
+    .form-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .form-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .form-container::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .form-container::-webkit-scrollbar-thumb:hover {
+      background: #1E3A8A;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #1E40AF;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1E40AF;
+      margin-top: 25px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #1E40AF;
+    }
+
+    /* Class/Grade Selection */
+    .class-selection {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .class-btn {
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .class-btn:hover {
+      border-color: #1E40AF;
+      background: #F8FAFC;
+    }
+
+    .class-btn.active {
+      background: #1E40AF;
+      color: white;
+      border-color: #1E40AF;
+    }
+
+    /* Subjects Selection - JSS */
+    .subjects-container {
+      margin: 20px 0;
+      padding: 15px;
+      background: #F8FAFC;
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .subjects-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .subjects-container::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 3px;
+    }
+
+    .subject-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .subject-item:hover {
+      background: #f9f9f9;
+    }
+
+    .subject-item input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      accent-color: #1E40AF;
+    }
+
+    .subject-item label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .selected-subjects {
+      margin-top: 15px;
+      padding: 10px;
+      background: #F8FAFC;
+      border-left: 4px solid #1E40AF;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .selected-subjects-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .subject-tag {
+      background: #1E40AF;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    /* Department Selection - SSS */
+    .department-selection {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .department-btn {
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .department-btn:hover {
+      border-color: #1E40AF;
+      background: #F8FAFC;
+    }
+
+    .department-btn.active {
+      background: #1E40AF;
+      color: white;
+      border-color: #1E40AF;
+    }
+
+    .dept-count {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .department-info {
+      margin-top: 15px;
+      padding: 10px;
+      background: #F8FAFC;
+      border-left: 4px solid #1E40AF;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #333;
+    }
+
+    .department-subjects-list {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .dept-subject {
+      background: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 12px;
+    }
+
+    /* Hidden sections */
+    .hidden {
+      display: none;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c62828;
+      font-size: 13px;
+    }
+
+    .success-message {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2e7d32;
+      font-size: 13px;
+    }
+
+    .required {
+      color: #c62828;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    button[type="submit"],
+    button[type="button"] {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button[type="submit"] {
+      background: #1E40AF;
+      color: white;
+    }
+
+    button[type="submit"]:hover {
+      background: #1E3A8A;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(30, 64, 175, 0.3);
+    }
+
+    button[type="submit"]:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button[type="button"] {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    button[type="button"]:hover {
+      background: #e0e0e0;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1E40AF;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+    }
+
+    /* Step indicator */
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      gap: 10px;
+    }
+
+    .step {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .step.active {
+      background: #1E40AF;
+      color: white;
+    }
+
+    .step.complete {
+      background: #4caf50;
+      color: white;
+    }
+
+    @media (max-width: 480px) {
+      .class-selection {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .department-subjects-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎓 EduPortal</h1>
+      <p>Student Registration</p>
+    </div>
+
+    <div class="form-container">
+      <form id="registrationForm">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step active">Step 1: Info</div>
+          <div class="step">Step 2: Class</div>
+          <div class="step">Step 3: OTP</div>
+        </div>
+
+        <!-- Error Messages -->
+        <div id="errorMessage" class="error-message hidden"></div>
+        <div id="successMessage" class="success-message hidden"></div>
+
+        <!-- Section 1: Personal Information -->
+        <div class="form-section">
+          <div class="section-title">Personal Information</div>
+
+          <div class="form-group">
+            <label for="regSchool">Select Your School <span class="required">*</span></label>
+            <select id="regSchool" name="schoolId" required>
+              <option value="">-- Loading schools… --</option>
+            </select>
+            <small style="color:#6b7280;display:block;margin-top:4px">
+              Choose the school you are registering with. If your school is not
+              listed, contact your administrator.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="firstName">First Name <span class="required">*</span></label>
+            <input type="text" id="firstName" name="firstName" placeholder="John" required>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name <span class="required">*</span></label>
+            <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username <span class="required">*</span></label>
+            <input type="text" id="username" name="username" placeholder="johndoe" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address <span class="required">*</span></label>
+            <input type="email" id="email" name="email" placeholder="john@student.school" required>
+          </div>
+
+          <div class="form-group">
+            <label for="regGender">Gender <span class="required">*</span></label>
+            <select id="regGender" name="gender">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password <span class="required">*</span></label>
+            <input type="password" id="password" name="password" placeholder="Enter strong password" required>
+          </div>
+
+          <div class="form-group">
+            <label for="parentPhone">Parent/Guardian Phone Number</label>
+            <input type="tel" id="parentPhone" name="parentPhone" placeholder="+234 803 123 4567">
+          </div>
+        </div>
+
+        <!-- Section 2: Class/Grade Selection -->
+        <div class="form-section">
+          <div class="section-title">Select Your Class/Grade <span class="required">*</span></div>
+
+          <div class="class-selection">
+            <button type="button" class="class-btn" data-class="JSS1">JSS 1</button>
+            <button type="button" class="class-btn" data-class="JSS2">JSS 2</button>
+            <button type="button" class="class-btn" data-class="JSS3">JSS 3</button>
+            <button type="button" class="class-btn" data-class="SSS1">SSS 1</button>
+            <button type="button" class="class-btn" data-class="SSS2">SSS 2</button>
+            <button type="button" class="class-btn" data-class="SSS3">SSS 3</button>
+          </div>
+
+          <input type="hidden" id="classLevel" name="class">
+        </div>
+
+        <!-- Section 3: JSS Subjects Selection -->
+        <div class="form-section hidden" id="jssSection">
+          <div class="section-title">Select Your Subjects <span class="required">*</span></div>
+          <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Choose at least 3 subjects from the following
+            list:</p>
+
+          <div class="subjects-container" id="subjectsContainer">
+            <!-- Populated by JavaScript -->
+          </div>
+
+          <div class="selected-subjects">
+            <strong>Selected Subjects (<span id="subjectCount">0</span>):</strong>
+            <div class="selected-subjects-list" id="selectedSubjectsList"></div>
+          </div>
+
+          <input type="hidden" id="selectedSubjects" name="subjects">
+        </div>
+
+        <!-- Section 4: SSS Department Selection -->
+        <div class="form-section hidden" id="sssSection">
+          <div class="section-title">Select Your Department <span class="required">*</span></div>
+          <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Choose one department:</p>
+
+          <div class="department-selection" id="departmentSelection">
+            <!-- Populated by JavaScript -->
+          </div>
+
+          <div class="department-info hidden" id="departmentInfo">
+            <strong>Department Subjects:</strong>
+            <div class="department-subjects-list" id="departmentSubjectsList"></div>
+          </div>
+
+          <input type="hidden" id="selectedDepartment" name="department">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="button-group">
+          <button type="button" id="resetBtn">Reset</button>
+          <button type="submit" id="sendOtpBtn">Send OTP</button>
+        </div>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Processing...</p>
+        </div>
+      </form>
+
+      <!-- OTP Verification Section (shown after OTP is sent) -->
+      <form id="otpForm" class="hidden">
+        <div class="form-section">
+          <div class="section-title">Email Verification</div>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+            We've sent a 6-digit OTP to your email. Please enter it below.
+          </p>
+
+          <div id="otpErrorMessage" class="error-message hidden"></div>
+
+          <div class="form-group">
+            <label for="otpCode">OTP Code <span class="required">*</span></label>
+            <input type="text" id="otpCode" name="otp" placeholder="123456" maxlength="6" required>
+          </div>
+
+          <div class="button-group">
+            <button type="button" id="backBtn">Back</button>
+            <button type="submit" id="verifyOtpBtn">Verify & Create Account</button>
+          </div>
+
+          <button type="button" id="resendOtpBtn"
+            style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #333;">Resend OTP</button>
+        </div>
+
+        <div class="loading" id="otpLoading">
+          <div class="spinner"></div>
+          <p>Verifying...</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    let registrationData = {
+      class: null,
+      department: null,
+      subjects: []
+    };
+
+    let subjectsList = {};
+    let departmentSubjects = {};
+
+    // API Configuration
+    const API_BASE = '/api';
+
+    // DOM Elements
+    const registrationForm = document.getElementById('registrationForm');
+    const otpForm = document.getElementById('otpForm');
+    const classButtons = document.querySelectorAll('.class-btn');
+    const jssSection = document.getElementById('jssSection');
+    const sssSection = document.getElementById('sssSection');
+    const subjectsContainer = document.getElementById('subjectsContainer');
+    const departmentSelection = document.getElementById('departmentSelection');
+    const departmentInfo = document.getElementById('departmentInfo');
+    const selectedSubjectsList = document.getElementById('selectedSubjectsList');
+    const departmentSubjectsList = document.getElementById('departmentSubjectsList');
+    const subjectCount = document.getElementById('subjectCount');
+    const selectedSubjectsInput = document.getElementById('selectedSubjects');
+    const selectedDepartmentInput = document.getElementById('selectedDepartment');
+    const classLevelInput = document.getElementById('classLevel');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const loading = document.getElementById('loading');
+    const resetBtn = document.getElementById('resetBtn');
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const backBtn = document.getElementById('backBtn');
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
+    const otpLoading = document.getElementById('otpLoading');
+    const otpErrorMessage = document.getElementById('otpErrorMessage');
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function () {
+      loadRegistrationData();
+      loadSchools();
+    });
+
+    // Load list of active schools into the school dropdown
+    async function loadSchools() {
+      const sel = document.getElementById('regSchool');
+      try {
+        const res = await fetch('/api/schools/list');
+        const data = await res.json();
+        const schools = (data && data.schools) || [];
+        if (!schools.length) {
+          sel.innerHTML = '<option value="">No schools available — contact support</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">-- Select your school --</option>' +
+          schools.map(function (s) {
+            return '<option value="' + s._id + '">' + s.name + (s.city ? ' — ' + s.city : '') + '</option>';
+          }).join('');
+      } catch (err) {
+        console.error('loadSchools error:', err);
+        sel.innerHTML = '<option value="">Failed to load schools. Refresh the page.</option>';
+      }
+    }
+
+    // Load subjects and departments from API
+    async function loadRegistrationData() {
+      try {
+        const response = await fetch(`${API_BASE}/subjects/registration-data`);
+        const data = await response.json();
+
+        subjectsList = {
+          JSS: data.jssSubjects
+        };
+
+        departmentSubjects = data.departmentSubjects;
+
+        // Create subject checkboxes
+        createSubjectCheckboxes();
+        createDepartmentButtons();
+      } catch (error) {
+        showError('Failed to load registration data');
+        console.error(error);
+      }
+    }
+
+    // Create subject checkboxes for JSS
+    function createSubjectCheckboxes() {
+      subjectsContainer.innerHTML = '';
+      subjectsList.JSS.forEach(subject => {
+        const div = document.createElement('div');
+        div.className = 'subject-item';
+        div.innerHTML = `
+          <input type="checkbox" id="subject-${subject}" value="${subject}" class="subject-checkbox">
+          <label for="subject-${subject}">${subject}</label>
+        `;
+        subjectsContainer.appendChild(div);
+      });
+
+      // Add change listeners
+      document.querySelectorAll('.subject-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedSubjects);
+      });
+    }
+
+    // Create department buttons for SSS
+    function createDepartmentButtons() {
+      departmentSelection.innerHTML = '';
+      Object.keys(departmentSubjects).forEach(dept => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'department-btn';
+        button.innerHTML = `
+          <span>${dept}</span>
+          <span class="dept-count">${departmentSubjects[dept].length} subjects</span>
+        `;
+        button.addEventListener('click', () => selectDepartment(dept, button));
+        departmentSelection.appendChild(button);
+      });
+    }
+
+    // Class selection handler
+    classButtons.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const selectedClass = this.dataset.class;
+
+        // Update active state
+        classButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        // Store class
+        registrationData.class = selectedClass;
+        classLevelInput.value = selectedClass;
+        clearError();
+
+        // Show appropriate section
+        if (selectedClass.startsWith('JSS')) {
+          jssSection.classList.remove('hidden');
+          sssSection.classList.add('hidden');
+          registrationData.department = null;
+          selectedDepartmentInput.value = '';
+        } else {
+          jssSection.classList.add('hidden');
+          sssSection.classList.remove('hidden');
+          registrationData.subjects = [];
+          selectedSubjectsInput.value = '';
+          clearSubjectSelections();
+        }
+      });
+    });
+
+    // Update selected subjects
+    function updateSelectedSubjects() {
+      const checked = document.querySelectorAll('.subject-checkbox:checked');
+      registrationData.subjects = Array.from(checked).map(cb => cb.value);
+      selectedSubjectsInput.value = JSON.stringify(registrationData.subjects);
+
+      // Update display
+      subjectCount.textContent = registrationData.subjects.length;
+      selectedSubjectsList.innerHTML = registrationData.subjects
+        .map(subject => `<span class="subject-tag">${subject}</span>`)
+        .join('');
+    }
+
+    // Clear subject selections
+    function clearSubjectSelections() {
+      document.querySelectorAll('.subject-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+    }
+
+    // Select department
+    function selectDepartment(dept, button) {
+      // Update active state
+      document.querySelectorAll('.department-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      button.classList.add('active');
+
+      // Store department
+      registrationData.department = dept;
+      selectedDepartmentInput.value = dept;
+      clearError();
+
+      // Show department info
+      departmentInfo.classList.remove('hidden');
+      departmentSubjectsList.innerHTML = departmentSubjects[dept]
+        .map(subject => `<div class="dept-subject">${subject}</div>`)
+        .join('');
+    }
+
+    // Form submission - Send OTP
+    registrationForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      // Validate school selection
+      const schoolIdSelected = document.getElementById('regSchool').value;
+      if (!schoolIdSelected) {
+        showError('Please select your school');
+        return;
+      }
+
+      // Validate
+      const genderSelected = document.getElementById('regGender').value;
+      if (!genderSelected) {
+        showError('Please select your gender');
+        return;
+      }
+
+      if (!registrationData.class) {
+        showError('Please select a class/grade');
+        return;
+      }
+
+      if (registrationData.class.startsWith('JSS')) {
+        if (registrationData.subjects.length === 0) {
+          showError('Please select at least one subject');
+          return;
+        }
+      } else {
+        if (!registrationData.department) {
+          showError('Please select a department');
+          return;
+        }
+      }
+
+      const formData = {
+        schoolId: schoolIdSelected,
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        parentPhoneNumber: document.getElementById('parentPhone').value,
+        gender: document.getElementById('regGender').value,
+        class: registrationData.class,
+        role: 'student'
+      };
+
+      if (registrationData.department) {
+        formData.department = registrationData.department;
+      }
+
+      try {
+        loading.style.display = 'block';
+        const response = await fetch(`${API_BASE}/auth/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+
+        // Show OTP form
+        registrationForm.classList.add('hidden');
+        otpForm.classList.remove('hidden');
+        showSuccess('OTP sent to your email. Check your inbox.');
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        loading.style.display = 'none';
+      }
+    });
+
+    // OTP Form submission
+    otpForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const otp = document.getElementById('otpCode').value.trim();
+      const email = document.getElementById('email').value;
+
+      if (!otp || otp.length !== 6) {
+        showOtpError('Please enter a valid 6-digit OTP');
+        return;
+      }
+
+      const verifyData = {
+        email,
+        otp,
+        class: registrationData.class
+      };
+
+      if (registrationData.class.startsWith('JSS')) {
+        verifyData.subjects = registrationData.subjects;
+      } else {
+        verifyData.department = registrationData.department;
+      }
+
+      try {
+        otpLoading.style.display = 'block';
+        const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(verifyData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+
+        showSuccess('✅ Registration successful! Waiting for admin approval...');
+        // Show detailed message
+        const successMsg = document.getElementById('successMessage');
+        successMsg.innerHTML = `
+          <div style="text-align: left; padding: 15px; background: #e8f5e9; border-radius: 8px; margin-top: 10px;">
+            <p style="font-weight: 600; color: #2e7d32; margin-bottom: 8px;">✅ Account Created Successfully</p>
+            <p style="color: #555; font-size: 14px; margin: 0;">Your account has been created and is now pending admin approval. You will receive an email once your registration is approved.</p>
+          </div>
+        `;
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
+      } catch (error) {
+        showOtpError(error.message);
+      } finally {
+        otpLoading.style.display = 'none';
+      }
+    });
+
+    // Back button
+    backBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      otpForm.classList.add('hidden');
+      registrationForm.classList.remove('hidden');
+      clearOtpError();
+    });
+
+    // Resend OTP
+    resendOtpBtn.addEventListener('click', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+
+      try {
+        otpLoading.style.display = 'block';
+        const response = await fetch(`${API_BASE}/auth/resend-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+
+        showSuccess('New OTP sent to your email');
+      } catch (error) {
+        showOtpError(error.message);
+      } finally {
+        otpLoading.style.display = 'none';
+      }
+    });
+
+    // Reset button
+    resetBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      registrationForm.reset();
+      registrationData = { class: null, department: null, subjects: [] };
+      classButtons.forEach(btn => btn.classList.remove('active'));
+      jssSection.classList.add('hidden');
+      sssSection.classList.add('hidden');
+      departmentInfo.classList.add('hidden');
+      clearSubjectSelections();
+      clearError();
+    });
+
+    // Error/Success helpers
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove('hidden');
+      successMessage.classList.add('hidden');
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.remove('hidden');
+      errorMessage.classList.add('hidden');
+    }
+
+    function showOtpError(message) {
+      otpErrorMessage.textContent = message;
+      otpErrorMessage.classList.remove('hidden');
+    }
+
+    function clearError() {
+      errorMessage.classList.add('hidden');
+      successMessage.classList.add('hidden');
+    }
+
+    function clearOtpError() {
+      otpErrorMessage.classList.add('hidden');
+    }
+  </script>
+</body>
+
+</html>

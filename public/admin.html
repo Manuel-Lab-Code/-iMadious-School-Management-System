@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal — EduPortal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+</head>
+
+<body class="dashboard-page admin-theme">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">🛡️</span>
+      <div class="brand-stack">
+        <span class="logo-text">EduPortal</span>
+        <span class="school-name" id="sidebarSchool">—</span>
+      </div>
+      <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="sidebarName">Administrator</div>
+        <div class="user-role-badge admin-badge">Admin</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showSection('overview')" data-section="overview">
+        <span>🏠</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item" href="/admin-approvals.html" data-section="approvals">
+        <span>📋</span><span>Registration Approvals</span>
+      </a>
+      <a class="nav-item" href="/admin-students.html" data-section="students">
+        <span>👥</span><span>Manage Students</span>
+      </a>
+      <a class="nav-item" onclick="showSection('teachers')" data-section="teachers">
+        <span>👨‍🏫</span><span>Manage Teachers</span>
+      </a>
+      <a class="nav-item" onclick="showSection('exams')" data-section="exams">
+        <span>📝</span><span>Exam Approval</span>
+      </a>
+      <a class="nav-item" onclick="showSection('results')" data-section="results">
+        <span>📊</span><span>Release Results</span>
+      </a>
+      <a class="nav-item" onclick="showSection('fees')" data-section="fees">
+        <span>💳</span><span>School Fees</span>
+      </a>
+      <a class="nav-item" onclick="showSection('test-release')" data-section="test-release">
+        <span>📝</span><span>Release Test Scores</span>
+      </a>
+      <a class="nav-item" onclick="showSection('subject-results')" data-section="subject-results">
+        <span>📋</span><span>Subject Results</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle-side" onclick="toggleTheme()">
+        <span id="themeIconSide">☀️</span> Toggle Theme
+      </button>
+      <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">Admin Control Panel</div>
+      <div class="topbar-right">
+        <div class="notif-btn" onclick="toggleNotif()">
+          🔔
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </div>
+        <div class="notif-dropdown hidden" id="notifDropdown">
+          <div class="notif-header">Notifications</div>
+          <div id="notifList">
+            <p class="notif-empty">No notifications</p>
+          </div>
+        </div>
+        <div class="topbar-user">Administrator</div>
+      </div>
+    </header>
+
+    <!-- ── OVERVIEW ──────────────────────────────────────── -->
+    <section class="dash-section active" id="section-overview">
+      <div class="welcome-banner admin-banner">
+        <div class="welcome-text">
+          <span class="welcome-school" id="welcomeSchool"></span>
+          <h2>Admin Control Panel 🛡️</h2>
+          <p>Manage students, approve exams, release results, and more</p>
+        </div>
+        <div class="welcome-illustration">⚙️</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🎒</div>
+          <div class="stat-info">
+            <div class="stat-value" id="adminStatStudents">0</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👩‍🏫</div>
+          <div class="stat-info">
+            <div class="stat-value" id="adminStatTeachers">0</div>
+            <div class="stat-label">Teachers</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <div class="stat-value" id="adminStatPending">0</div>
+            <div class="stat-label">Pending Exams</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" id="adminStatActive">0</div>
+            <div class="stat-label">Active Exams</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid-2">
+        <div class="card">
+          <div class="card-header">⏳ Pending Exam Approvals</div>
+          <div id="adminOverviewPending"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">🎒 Recent Students</div>
+          <div id="adminOverviewStudents"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STUDENTS MANAGEMENT ───────────────────────────── -->
+    <section class="dash-section" id="section-students">
+      <div class="section-header-row">
+        <div>
+          <h2>🎒 Student Management</h2>
+          <p>Create, edit, and manage student accounts</p>
+        </div>
+        <button class="btn-primary" onclick="openStudentModal()">+ Add Student</button>
+      </div>
+
+      <div class="table-controls">
+        <input type="text" id="studentSearch" placeholder="🔍  Search students…" oninput="filterStudents()"
+          class="search-input" />
+        <select id="studentClassFilter" onchange="filterStudents()" class="filter-select">
+          <option value="">All Classes</option>
+          <option value="JSS 1">JSS 1</option>
+          <option value="JSS 2">JSS 2</option>
+          <option value="JSS 3">JSS 3</option>
+          <option value="SSS 1">SSS 1</option>
+          <option value="SSS 2">SSS 2</option>
+          <option value="SSS 3">SSS 3</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="studentsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Class</th>
+              <th>Email</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── TEACHERS SECTION ──────────────────────────────── -->
+    <section class="dash-section" id="section-teachers">
+      <div class="section-header-row">
+        <div>
+          <h2>👩‍🏫 Teacher Accounts</h2>
+          <p>Manage teacher login credentials</p>
+        </div>
+        <button class="btn-primary" onclick="openTeacherModal()">+ Add Teacher</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="teachersTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Subject</th>
+              <th>Salary</th>
+              <th>Employed</th>
+              <th>Phone</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="teachersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── EXAM APPROVAL ─────────────────────────────────── -->
+    <section class="dash-section" id="section-exams">
+      <div class="section-header">
+        <h2>📝 Exam Approval Queue</h2>
+        <p>Review and approve examinations submitted by teachers</p>
+      </div>
+
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="filterExamQueue('pending', this)">⏳ Pending</button>
+        <button class="tab-btn" onclick="filterExamQueue('approved', this)">✅ Approved</button>
+        <button class="tab-btn" onclick="filterExamQueue('rejected', this)">❌ Rejected</button>
+        <button class="tab-btn" onclick="filterExamQueue('all', this)">📋 All</button>
+      </div>
+
+      <div id="examQueueList" class="exam-queue-list"></div>
+    </section>
+
+    <!-- ── RESULTS RELEASE ───────────────────────────────── -->
+    <section class="dash-section" id="section-results">
+      <div class="section-header">
+        <h2>📊 Result Release</h2>
+        <p>Approve and publish teacher-submitted results to students</p>
+      </div>
+      <div id="resultsReleaseList"></div>
+    </section>
+
+    <!-- ── FEES MANAGEMENT ───────────────────────────────── -->
+    <section class="dash-section" id="section-fees">
+      <div class="section-header">
+        <h2>💳 School Fees Management</h2>
+        <p>Update and track student fee payment status</p>
+      </div>
+
+      <div class="table-controls">
+        <input type="text" id="feeSearch" placeholder="🔍  Search student…" oninput="filterFees()"
+          class="search-input" />
+        <select id="feeStatusFilter" onchange="filterFees()" class="filter-select">
+          <option value="">All Status</option>
+          <option value="paid">Paid</option>
+          <option value="partial">Partial</option>
+          <option value="unpaid">Unpaid</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="feesTable">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Total Fee</th>
+              <th>Amount Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="feesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── TEST SCORE RELEASE SECTION ─────────────────── -->
+    <section class="dash-section" id="section-test-release">
+      <div class="section-header">
+        <h2>📝 Release Test Scores</h2>
+        <p>Review and release teacher-submitted test scores to students</p>
+      </div>
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="filterTestScores('pending',this)">⏳ Pending</button>
+        <button class="tab-btn" onclick="filterTestScores('released',this)">✅ Released</button>
+        <button class="tab-btn" onclick="filterTestScores('all',this)">📋 All</button>
+      </div>
+      <div id="adminTestScoresList"></div>
+    </section>
+
+    <!-- ── SUBJECT RESULTS — COMPOUND VIEW ─────────────────── -->
+    <section class="dash-section" id="section-subject-results">
+      <div class="section-header-row">
+        <div>
+          <h2>📋 Compound Results — All Students</h2>
+          <p>Full breakdown per student per subject: Objective (20) + Theory (40) + Test (40) = 100</p>
+        </div>
+        <button class="btn-primary" onclick="loadAdminSubjectResults()">🔄 Refresh</button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="card" style="padding:16px 20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:12px">
+          <div class="form-group" style="margin:0">
+            <label>Session</label>
+            <select id="srSessionFilter" onchange="filterSubjectResults()">
+              <option value="">All Sessions</option>
+              <option>2024/2025</option>
+              <option>2025/2026</option>
+              <option>2026/2027</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Term</label>
+            <select id="srTermFilter" onchange="filterSubjectResults()">
+              <option value="">All Terms</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Class</label>
+            <select id="srClassFilter" onchange="filterSubjectResults()">
+              <option value="">All Classes</option>
+              <option>JSS 1</option>
+              <option>JSS 2</option>
+              <option>JSS 3</option>
+              <option>SSS 1</option>
+              <option>SSS 2</option>
+              <option>SSS 3</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Subject</label>
+            <select id="srSubjectFilter" onchange="filterSubjectResults()">
+              <option value="">All Subjects</option>
+              <option>Mathematics</option>
+              <option>English Language</option>
+              <option>Biology</option>
+              <option>Chemistry</option>
+              <option>Physics</option>
+              <option>Geography</option>
+              <option>History</option>
+              <option>Economics</option>
+              <option>Government</option>
+              <option>Literature</option>
+              <option>Agricultural Science</option>
+              <option>Computer Science</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Search Student</label>
+            <input type="text" id="srStudentFilter" placeholder="Name or username..."
+              oninput="filterSubjectResults()" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Status</label>
+            <select id="srStatusFilter" onchange="filterSubjectResults()">
+              <option value="">All</option>
+              <option value="pending">Pending Release</option>
+              <option value="released">Released</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-success" onclick="bulkReleaseSubjectResults()">
+            📤 Release All Filtered Results
+          </button>
+          <button class="btn-secondary" onclick="exportResultsCSV()">
+            📥 Export to CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <div class="stat-value" id="srTotalStudents">—</div>
+            <div class="stat-label">Students</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📚</div>
+          <div class="stat-info">
+            <div class="stat-value" id="srTotalRecords">—</div>
+            <div class="stat-label">Records</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📤</div>
+          <div class="stat-info">
+            <div class="stat-value" id="srReleasedCount">—</div>
+            <div class="stat-label">Released</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <div class="stat-value" id="srPendingCount">—</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="subjectResultsList"></div>
+    </section>
+
+  </main>
+
+  <!-- ── MODALS ────────────────────────────────────────────── -->
+
+  <!-- Student Add/Edit Modal -->
+  <div class="modal-overlay hidden" id="studentModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="studentModalTitle">Add Student</h3>
+        <button onclick="closeStudentModal()">✕</button>
+      </div>
+      <form onsubmit="saveStudent(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="modalFirstName" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="modalLastName" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="modalUsername" required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="modalEmail" required />
+        </div>
+        <div class="form-group">
+          <label>Class</label>
+          <select id="modalClass" required>
+            <option value="">Select Class</option>
+            <option>JSS 1</option>
+            <option>JSS 2</option>
+            <option>JSS 3</option>
+            <option>SSS 1</option>
+            <option>SSS 2</option>
+            <option>SSS 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="text" id="modalPassword" required />
+        </div>
+        <input type="hidden" id="modalStudentId" />
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeStudentModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Teacher Add/Edit Modal -->
+  <div class="modal-overlay hidden" id="teacherModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="teacherModalTitle">Add Teacher</h3>
+        <button onclick="closeTeacherModal()">✕</button>
+      </div>
+      <form onsubmit="saveTeacher(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="teacherFirstName" required />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="teacherLastName" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="teacherUsername" required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="teacherEmail" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="teacherSubject" />
+          </div>
+          <div class="form-group">
+            <label>Salary (₦)</label>
+            <select id="teacherSalary">
+              <option value="">Select Salary</option>
+              <option value="50000">50,000</option>
+              <option value="75000">75,000</option>
+              <option value="100000">100,000</option>
+              <option value="125000">125,000</option>
+              <option value="150000">150,000</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employment Date</label>
+            <input type="date" id="teacherEmploymentDate" />
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="teacherPhone" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="teacherGender">
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <input type="hidden" id="teacherId" />
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeTeacherModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save Teacher</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Fee Update Modal -->
+  <div class="modal-overlay hidden" id="feeModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Update Fee Status</h3>
+        <button onclick="closeFeeModal()">✕</button>
+      </div>
+      <form onsubmit="saveFee(event)">
+        <div class="form-group">
+          <label>Student</label>
+          <input type="text" id="feeModalStudent" readonly />
+        </div>
+        <div class="form-group">
+          <label>Total Fee (₦)</label>
+          <input type="number" id="feeModalTotal" required />
+        </div>
+        <div class="form-group">
+          <label>Amount Paid (₦)</label>
+          <input type="number" id="feeModalPaid" required oninput="calcBalance()" />
+        </div>
+        <div class="form-group">
+          <label>Balance</label>
+          <input type="text" id="feeModalBalance" readonly />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="feeModalStatus">
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial Payment</option>
+            <option value="paid">Fully Paid</option>
+          </select>
+        </div>
+        <input type="hidden" id="feeModalStudentId" />
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeFeeModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Exam Preview Modal -->
+  <div class="modal-overlay hidden" id="examPreviewOverlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>📋 Exam Preview</h3>
+        <button onclick="closeExamPreview()">✕</button>
+      </div>
+      <div id="examPreviewContent"></div>
+      <div class="modal-footer" id="examPreviewActions"></div>
+    </div>
+  </div>
+
+  <script src="role-guard.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

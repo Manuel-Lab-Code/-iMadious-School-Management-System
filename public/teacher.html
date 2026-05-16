@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Portal — EduPortal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+</head>
+
+<body class="dashboard-page teacher-theme">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">👩‍🏫</span>
+      <div class="brand-stack">
+        <span class="logo-text">EduPortal</span>
+        <span class="school-name" id="sidebarSchool">—</span>
+      </div>
+      <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar teacher-avatar" id="sidebarAvatar">T</div>
+      <div>
+        <div class="user-name" id="sidebarName">Teacher</div>
+        <div class="user-role-badge teacher-badge">Teacher</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showSection('overview')" data-section="overview">
+        <span>🏠</span><span>Dashboard</span>
+      </a>
+      <a class="nav-item" onclick="showSection('create-exam')" data-section="create-exam">
+        <span>➕</span><span>Create Exam</span>
+      </a>
+      <a class="nav-item" onclick="showSection('my-exams')" data-section="my-exams">
+        <span>📝</span><span>My Exams</span>
+      </a>
+      <a class="nav-item" onclick="showSection('submissions')" data-section="submissions">
+        <span>📬</span><span>Student Submissions</span>
+      </a>
+      <a class="nav-item" onclick="showSection('marking')" data-section="marking">
+        <span>✔️</span><span>Mark & Submit Results</span>
+      </a>
+      <a class="nav-item" onclick="showSection('test-scores')" data-section="test-scores">
+        <span>📝</span><span>Enter Test Scores</span>
+      </a>
+      <a class="nav-item" onclick="showSection('profile')" data-section="profile">
+        <span>👤</span><span>My Profile</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle-side" onclick="toggleTheme()">
+        <span id="themeIconSide">☀️</span> Toggle Theme
+      </button>
+      <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+  <main class="main-content">
+
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">Teacher Workspace</div>
+      <div class="topbar-right">
+        <div class="notif-btn" onclick="toggleNotif()">
+          🔔
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </div>
+        <div class="notif-dropdown hidden" id="notifDropdown">
+          <div class="notif-header">Notifications</div>
+          <div id="notifList">
+            <p class="notif-empty">No notifications</p>
+          </div>
+        </div>
+        <div class="topbar-user" id="topbarUser">Teacher</div>
+      </div>
+    </header>
+
+    <!-- ── OVERVIEW ──────────────────────────────────────── -->
+    <section class="dash-section active" id="section-overview">
+      <div class="welcome-banner teacher-banner">
+        <div class="welcome-text">
+          <span class="welcome-school" id="welcomeSchool"></span>
+          <h2>Good day, <span id="welcomeName">Teacher</span>! 👩‍🏫</h2>
+          <p>Manage your exams and review student submissions</p>
+        </div>
+        <div class="welcome-illustration">📖</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
+          <div class="stat-info">
+            <div class="stat-value" id="teacherStatExams">0</div>
+            <div class="stat-label">My Exams</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <div class="stat-value" id="teacherStatPending">0</div>
+            <div class="stat-label">Pending Approval</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" id="teacherStatApproved">0</div>
+            <div class="stat-label">Approved Exams</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📬</div>
+          <div class="stat-info">
+            <div class="stat-value" id="teacherStatSubmissions">0</div>
+            <div class="stat-label">Submissions</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid-2">
+        <div class="card">
+          <div class="card-header">📝 My Recent Exams</div>
+          <div id="teacherOverviewExams" class="overview-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">📬 Recent Submissions</div>
+          <div id="teacherOverviewSubmissions" class="overview-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CREATE EXAM ───────────────────────────────────── -->
+    <section class="dash-section" id="section-create-exam">
+
+      <!-- TOP BAR: title + autosave status -->
+      <div class="ce-topbar">
+        <div>
+          <h2>➕ Create New Examination</h2>
+          <p>Your work is saved automatically — you can safely close and continue later.</p>
+        </div>
+        <div class="ce-topbar-right">
+          <div class="autosave-pill" id="autosavePill">
+            <span class="autosave-dot" id="autosaveDot"></span>
+            <span id="autosaveText">All changes saved</span>
+          </div>
+          <button class="btn-danger btn-sm" onclick="clearExamForm()">🗑 Clear Draft</button>
+        </div>
+      </div>
+
+      <!-- EXAM META CARD -->
+      <div class="card ce-meta-card">
+        <div class="ce-meta-grid">
+          <div class="form-group">
+            <label>Exam Title <span class="req">*</span></label>
+            <input type="text" id="examTitle" placeholder="e.g. Mathematics Mid-Term Exam 2025"
+              oninput="scheduleAutosave()" />
+          </div>
+          <div class="form-group">
+            <label>Subject <span class="req">*</span></label>
+            <select id="examSubject" onchange="scheduleAutosave()">
+              <option value="">Select Subject</option>
+              <option>Mathematics</option>
+              <option>English Language</option>
+              <option>Biology</option>
+              <option>Chemistry</option>
+              <option>Physics</option>
+              <option>Geography</option>
+              <option>History</option>
+              <option>Economics</option>
+              <option>Government</option>
+              <option>Literature</option>
+              <option>Agricultural Science</option>
+              <option>Computer Science</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Class <span class="req">*</span></label>
+            <select id="examClass" onchange="scheduleAutosave()">
+              <option value="">Select Class</option>
+              <option value="JSS1">JSS 1</option>
+              <option value="JSS2">JSS 2</option>
+              <option value="JSS3">JSS 3</option>
+              <option value="SSS1">SSS 1</option>
+              <option value="SSS2">SSS 2</option>
+              <option value="SSS3">SSS 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes) <span class="req">*</span></label>
+            <input type="number" id="examDuration" placeholder="e.g. 60" min="5" max="300"
+              oninput="scheduleAutosave()" />
+          </div>
+          <div class="form-group">
+            <label>Academic Session</label>
+            <input type="text" id="examSession" placeholder="e.g. 2024/2025" oninput="scheduleAutosave()" />
+          </div>
+          <div class="form-group">
+            <label>Term</label>
+            <select id="examTerm" onchange="scheduleAutosave()">
+              <option value="">Select Term</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SCORE SUMMARY BAR -->
+        <div class="score-summary-bar">
+          <div class="score-chip">
+            <span class="score-chip-label">Objective Total</span>
+            <span class="score-chip-val" id="objTotal">0 marks</span>
+          </div>
+          <div class="score-chip">
+            <span class="score-chip-label">Theory Total</span>
+            <span class="score-chip-val" id="theoryTotal">0 marks</span>
+          </div>
+          <div class="score-chip score-chip-grand">
+            <span class="score-chip-label">Grand Total</span>
+            <span class="score-chip-val" id="grandTotal">0 marks</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION TABS ─────────────────────────────────── -->
+      <div class="ce-section-tabs">
+        <button class="ce-tab active" id="tab-obj" onclick="switchExamTab('objective', this)">
+          📋 Section A — Objective (MCQ)
+          <span class="ce-tab-count" id="objCount">0 Qs</span>
+        </button>
+        <button class="ce-tab" id="tab-theory" onclick="switchExamTab('theory', this)">
+          ✍️ Section B — Theory / Essay
+          <span class="ce-tab-count" id="theoryCount">0 Qs</span>
+        </button>
+      </div>
+
+      <!-- ── OBJECTIVE SECTION ────────────────────────────── -->
+      <div class="ce-panel" id="panel-objective">
+        <div class="ce-panel-header">
+          <div class="ce-panel-info">
+            <h4>📋 Section A — Objective Questions (Multiple Choice)</h4>
+            <p>Each question has 4 options. Select the correct answer and assign marks.</p>
+          </div>
+          <button class="btn-primary btn-sm" onclick="addObjectiveQuestion()">
+            + Add Objective Question
+          </button>
+        </div>
+        <div id="objectiveList" class="questions-container"></div>
+        <div class="ce-panel-empty hidden" id="objEmpty">
+          <span>📋</span>
+          <p>No objective questions yet. Click "Add Objective Question" to start.</p>
+        </div>
+      </div>
+
+      <!-- ── THEORY SECTION ───────────────────────────────── -->
+      <div class="ce-panel hidden" id="panel-theory">
+        <div class="ce-panel-header">
+          <div class="ce-panel-info">
+            <h4>✍️ Section B — Theory / Essay Questions</h4>
+            <p>Students will type written answers. Assign marks per question.</p>
+          </div>
+          <button class="btn-primary btn-sm" onclick="addTheoryQuestion()">
+            + Add Theory Question
+          </button>
+        </div>
+        <div id="theoryList" class="questions-container"></div>
+        <div class="ce-panel-empty hidden" id="theoryEmpty">
+          <span>✍️</span>
+          <p>No theory questions yet. Click "Add Theory Question" to start.</p>
+        </div>
+      </div>
+
+      <!-- SUBMIT BAR -->
+      <div class="ce-submit-bar">
+        <div class="ce-submit-info">
+          <div id="examCreateError" class="form-error"></div>
+          <div class="ce-draft-note">
+            💾 Draft auto-saved · Last saved: <span id="lastSavedTime">—</span>
+          </div>
+        </div>
+        <div class="ce-submit-actions">
+          <button class="btn-secondary" onclick="previewExamDraft()">👁 Preview Draft</button>
+          <button class="btn-primary" onclick="submitExamToAdmin()">
+            Submit to Admin for Approval 📤
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── EXAM DRAFT PREVIEW MODAL ──────────────────────── -->
+    <div class="modal-overlay hidden" id="draftPreviewOverlay">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3>👁 Exam Draft Preview</h3>
+          <button onclick="closeDraftPreview()">✕</button>
+        </div>
+        <div id="draftPreviewContent" style="padding:20px;max-height:65vh;overflow-y:auto"></div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeDraftPreview()">Close</button>
+          <button class="btn-primary" onclick="closeDraftPreview();submitExamToAdmin()">
+            Submit to Admin 📤
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY EXAMS ──────────────────────────────────────── -->
+    <section class="dash-section" id="section-my-exams">
+      <div class="section-header">
+        <h2>📝 My Examinations</h2>
+        <p>All exams you have created and their approval status</p>
+      </div>
+      <div id="myExamsList"></div>
+    </section>
+
+    <!-- ── STUDENT SUBMISSIONS ───────────────────────────── -->
+    <section class="dash-section" id="section-submissions">
+      <div class="section-header">
+        <h2>📬 Student Submissions</h2>
+        <p>View all student exam submissions for your exams</p>
+      </div>
+      <div id="submissionsList"></div>
+    </section>
+
+    <!-- ── MARKING & RESULTS ─────────────────────────────── -->
+    <section class="dash-section" id="section-marking">
+      <div class="section-header">
+        <h2>✔️ Mark & Submit Results</h2>
+        <p>Review auto-marked results and submit to Admin for release</p>
+      </div>
+      <div id="markingList"></div>
+    </section>
+
+    <!-- ── TEST SCORES SECTION ──────────────────────────────── -->
+    <section class="dash-section" id="section-test-scores">
+      <div class="section-header-row">
+        <div>
+          <h2>📝 Enter Student Test Scores</h2>
+          <p>Enter test scores for each student (max 40 marks). Saved scores are submitted to Admin for release to
+            students.</p>
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="card" style="padding:18px 20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:14px">
+
+          <div class="form-group" style="margin:0">
+            <label>Subject <span class="req">*</span></label>
+            <select id="tsSubject">
+              <option value="">Select Subject</option>
+              <option>Mathematics</option>
+              <option>English Language</option>
+              <option>Biology</option>
+              <option>Chemistry</option>
+              <option>Physics</option>
+              <option>Geography</option>
+              <option>History</option>
+              <option>Economics</option>
+              <option>Government</option>
+              <option>Literature</option>
+              <option>Agricultural Science</option>
+              <option>Computer Science</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin:0">
+            <label>Class <span class="req">*</span></label>
+            <select id="tsClass">
+              <option value="">Select Class</option>
+              <option value="JSS1">JSS 1</option>
+              <option value="JSS2">JSS 2</option>
+              <option value="JSS3">JSS 3</option>
+              <option value="SSS1">SSS 1</option>
+              <option value="SSS2">SSS 2</option>
+              <option value="SSS3">SSS 3</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin:0">
+            <label>Academic Session <span class="req">*</span></label>
+            <input type="text" id="tsSession" placeholder="e.g. 2024/2025" />
+          </div>
+
+          <div class="form-group" style="margin:0">
+            <label>Term <span class="req">*</span></label>
+            <select id="tsTerm">
+              <option value="">Select Term</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+
+        </div>
+        <button class="btn-primary" onclick="loadTestScoreStudents()">
+          🔍 Load Students
+        </button>
+      </div>
+
+      <!-- Student scores list rendered here -->
+      <div id="testScoresList">
+        <div class="empty-state">
+          <span class="empty-icon">📝</span>
+          Select subject, class, session and term above, then click "Load Students".
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PROFILE SECTION ───────────────────────────────– -->
+    <section class="dash-section" id="section-profile">
+      <div class="section-header">
+        <h2>👤 My Profile</h2>
+        <p>Your personal account information</p>
+      </div>
+      <div id="profileContent"></div>
+    </section>
+
+  </main>
+
+  <!-- ── EXAM PREVIEW & THEORY MARKING MODAL ─────────────────── -->
+  <div class="modal-overlay hidden" id="examPreviewOverlay" onclick="closeExamPreview()">
+    <div class="modal modal-lg" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✍️ Theory Marking</h3>
+        <button onclick="closeExamPreview()">✕</button>
+      </div>
+      <div id="examPreviewContent" style="padding:20px;max-height:60vh;overflow-y:auto"></div>
+      <div class="modal-footer" id="examPreviewActions"></div>
+    </div>
+  </div>
+
+  <script src="role-guard.js"></script>
+  <script src="script.js"></script>
+  <script src="exam-creator.js"></script>
+</body>
+
+</html>

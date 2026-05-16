@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Registration Approvals | EduPortal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: #1E40AF;
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 5px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-logout:hover {
+      background: white;
+      color: #1E40AF;
+    }
+
+    /* Tabs/Filters */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      color: #1E40AF;
+      border-bottom-color: #1E40AF;
+    }
+
+    .tab-btn:hover {
+      color: #1E40AF;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card.pending {
+      border-color: #ff9800;
+    }
+
+    .stat-card.approved {
+      border-color: #4caf50;
+    }
+
+    .stat-card.rejected {
+      border-color: #f44336;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #333;
+    }
+
+    /* Registrations List */
+    .registrations-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .registrations-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .registrations-body {
+      max-height: 700px;
+      overflow-y: auto;
+    }
+
+    .registrations-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .registrations-body::-webkit-scrollbar-thumb {
+      background: #1E40AF;
+      border-radius: 4px;
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .registration-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 15px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      align-items: start;
+    }
+
+    .registration-item:hover {
+      background: #f9f9f9;
+    }
+
+    .registration-info {
+      display: flex;
+      gap: 15px;
+      align-items: start;
+    }
+
+    .registration-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #1E40AF;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .registration-details h3 {
+      margin-bottom: 6px;
+      font-size: 15px;
+      color: #222;
+    }
+
+    .registration-details p {
+      font-size: 13px;
+      color: #999;
+      margin: 3px 0;
+    }
+
+    .registration-role {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .role-student {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .role-teacher {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .registration-class {
+      font-size: 13px;
+      color: #666;
+      padding: 6px 0;
+    }
+
+    .registration-date {
+      font-size: 12px;
+      color: #999;
+      padding: 6px 0;
+    }
+
+    /* Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-approve {
+      background: #4caf50;
+      color: white;
+    }
+
+    .btn-approve:hover {
+      background: #388e3c;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-reject {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-reject:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #222;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #1E40AF;
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn-cancel {
+      background: #f0f0f0;
+      color: #333;
+      padding: 10px 18px;
+    }
+
+    .btn-cancel:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-submit {
+      background: #1E40AF;
+      color: white;
+      padding: 10px 18px;
+    }
+
+    .btn-submit:hover {
+      background: #1E3A8A;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      border-left: 4px solid;
+    }
+
+    .alert-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-color: #2e7d32;
+    }
+
+    .alert-error {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #c62828;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1E40AF;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .registration-item {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .action-buttons {
+        justify-content: flex-end;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>📋 Registration Approvals</h1>
+        <p>Review and approve pending student and teacher registrations</p>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card pending">
+        <div class="stat-label">⏳ Pending</div>
+        <div class="stat-value" id="statPending">0</div>
+      </div>
+      <div class="stat-card approved">
+        <div class="stat-label">✅ Approved</div>
+        <div class="stat-value" id="statApproved">0</div>
+      </div>
+      <div class="stat-card rejected">
+        <div class="stat-label">❌ Rejected</div>
+        <div class="stat-value" id="statRejected">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="filterByStatus('all')">👥 All Pending</button>
+      <button class="tab-btn" onclick="filterByStatus('student')">🎒 Students Only</button>
+      <button class="tab-btn" onclick="filterByStatus('teacher')">👩‍🏫 Teachers Only</button>
+    </div>
+
+    <!-- Registrations -->
+    <div class="registrations-container">
+      <div class="registrations-header">
+        <h3>Pending Registrations</h3>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="filterBySearch()">
+        </div>
+      </div>
+
+      <div class="registrations-body">
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Loading registrations...</p>
+        </div>
+        <div id="registrationsList"></div>
+      </div>
+    </div>
+
+    <div class="alert alert-success hidden" id="successAlert"></div>
+    <div class="alert alert-error hidden" id="errorAlert"></div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal" id="rejectModal">
+    <div class="modal-content">
+      <div class="modal-header">❌ Reject Registration</div>
+      <div class="modal-body">
+        <p style="margin-bottom: 15px; color: #666; font-size: 13px;">
+          Please provide a reason for rejection. The applicant will see this reason when they try to log in.
+        </p>
+        <div class="form-group">
+          <label>Rejection Reason *</label>
+          <textarea id="rejectionReason"
+            placeholder="E.g., Invalid credentials, Does not meet requirements, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+        <button class="btn-submit" onclick="submitRejection()">Reject Registration</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allPending = [];
+    let filteredPending = [];
+    let currentRejectUserId = null;
+    let currentFilter = 'all';
+
+    const API_BASE = '/api';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('edu_token');
+      if (!token) {
+        window.location.href = '/index.html';
+        return;
+      }
+      await loadPendingRegistrations();
+    });
+
+    // Load pending registrations
+    async function loadPendingRegistrations() {
+      try {
+        const response = await fetch(`${API_BASE}/students/pending-registrations`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('edu_token')}` }
+        });
+
+        if (response.status === 403) {
+          alert('You do not have permission to access this page.');
+          window.location.href = '/index.html';
+          return;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMsg = errorData.message || `Server error (${response.status})`;
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        allPending = data.pending;
+        filteredPending = allPending;
+
+        // Update stats
+        document.getElementById('statPending').textContent = data.counts.pending;
+        document.getElementById('statApproved').textContent = data.counts.approved;
+        document.getElementById('statRejected').textContent = data.counts.rejected;
+
+        displayRegistrations();
+      } catch (error) {
+        showError('Failed to load registrations: ' + error.message);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    // Display registrations
+    function displayRegistrations() {
+      const container = document.getElementById('registrationsList');
+
+      if (filteredPending.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">✅</div>
+            <p>No pending registrations to review</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredPending.map(user => {
+        const classInfo = user.class ? `📚 ${user.class}` : '';
+        const deptInfo = user.department ? ` • ${user.department}` : '';
+        const isStudent = user.role === 'student';
+        const roleClass = isStudent ? 'role-student' : 'role-teacher';
+        const roleLabel = isStudent ? '👤 Student' : '👨‍🏫 Teacher';
+
+        return `
+          <div class="registration-item">
+            <div class="registration-info">
+              <div class="registration-avatar">${(user.firstName || 'U')[0].toUpperCase()}</div>
+              <div class="registration-details">
+                <h3>${user.firstName} ${user.lastName}</h3>
+                <p>📧 ${user.email}</p>
+                <p>🆔 @${user.username}</p>
+                ${user.parentPhoneNumber ? `<p>📞 ${user.parentPhoneNumber}</p>` : (user.phone ? `<p>📞 ${user.phone}</p>` : '')}
+                ${user.gender ? `<p>⚥ ${user.gender.charAt(0).toUpperCase() + user.gender.slice(1)}</p>` : ''}
+                <span class="registration-role ${roleClass}">${roleLabel}</span>
+                ${classInfo ? `<div class="registration-class">${classInfo}${deptInfo}</div>` : ''}
+                <div class="registration-date">Registered: ${new Date(user.createdAt).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="btn-approve" onclick="approveRegistration('${user._id}')">✅ Approve</button>
+              <button class="btn-reject" onclick="openRejectModal('${user._id}')">❌ Reject</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filter by status
+    function filterByStatus(status) {
+      currentFilter = status;
+      if (status === 'all') {
+        filteredPending = allPending;
+      } else if (status === 'student') {
+        filteredPending = allPending.filter(u => u.role === 'student');
+      } else if (status === 'teacher') {
+        filteredPending = allPending.filter(u => u.role === 'teacher');
+      }
+
+      // Update active tab
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      displayRegistrations();
+    }
+
+    // Filter by search
+    function filterBySearch() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      filteredPending = allPending.filter(u => {
+        const matchesFilter = currentFilter === 'all' || u.role === currentFilter;
+        const matchesQuery = u.firstName.toLowerCase().includes(query) ||
+          u.lastName.toLowerCase().includes(query) ||
+          u.email.toLowerCase().includes(query) ||
+          u.username.toLowerCase().includes(query);
+        return matchesFilter && matchesQuery;
+      });
+      displayRegistrations();
+    }
+
+    // Approve registration
+    async function approveRegistration(userId) {
+      if (!confirm('Are you sure you want to approve this registration?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/students/${userId}/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('edu_token')}` }
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+
+        showSuccess('Registration approved! ✅');
+        await loadPendingRegistrations();
+      } catch (error) {
+        showError('Failed to approve: ' + error.message);
+      }
+    }
+
+    // Open reject modal
+    function openRejectModal(userId) {
+      currentRejectUserId = userId;
+      document.getElementById('rejectionReason').value = '';
+      document.getElementById('rejectModal').classList.add('active');
+    }
+
+    // Close reject modal
+    function closeRejectModal() {
+      document.getElementById('rejectModal').classList.remove('active');
+      currentRejectUserId = null;
+    }
+
+    // Submit rejection
+    async function submitRejection() {
+      const reason = document.getElementById('rejectionReason').value.trim();
+
+      if (!reason) {
+        alert('Please provide a rejection reason');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/students/${currentRejectUserId}/reject`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('edu_token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ reason })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message);
+        }
+
+        showSuccess('Registration rejected! ❌');
+        closeRejectModal();
+        await loadPendingRegistrations();
+      } catch (error) {
+        showError('Failed to reject: ' + error.message);
+      }
+    }
+
+    // Show success
+    function showSuccess(message) {
+      const alert = document.getElementById('successAlert');
+      alert.textContent = message;
+      alert.classList.remove('hidden');
+      setTimeout(() => alert.classList.add('hidden'), 4000);
+    }
+
+    // Show error
+    function showError(message) {
+      const alert = document.getElementById('errorAlert');
+      alert.textContent = message;
+      alert.classList.remove('hidden');
+      setTimeout(() => alert.classList.add('hidden'), 4000);
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('edu_token');
+      window.location.href = '/index.html';
+    }
+
+    // Close modal on outside click
+    document.getElementById('rejectModal').addEventListener('click', (e) => {
+      if (e.target.id === 'rejectModal') closeRejectModal();
+    });
+  </script>
+</body>
+
+</html>
