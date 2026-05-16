@@ -757,8 +757,18 @@ require('dotenv').config();
    Uses Gmail SMTP. Set EMAIL_USER and EMAIL_PASS in .env.
    For Gmail: enable "App Passwords" in Google Account security.
    ─────────────────────────────────────────────────────────── */
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+// });
+
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
