@@ -28,8 +28,18 @@
 //    Uses Gmail SMTP. Set EMAIL_USER and EMAIL_PASS in .env.
 //    For Gmail: enable "App Passwords" in Google Account security.
 //    ─────────────────────────────────────────────────────────── */
+// // const transporter = nodemailer.createTransport({
+// //   service: 'gmail',
+// //   auth: {
+// //     user: process.env.EMAIL_USER,
+// //     pass: process.env.EMAIL_PASS,
+// //   },
+// // });
+
 // const transporter = nodemailer.createTransport({
-//   service: 'gmail',
+//   host: 'smtp.gmail.com',
+//   port: 587,
+//   secure: false,
 //   auth: {
 //     user: process.env.EMAIL_USER,
 //     pass: process.env.EMAIL_PASS,
@@ -71,6 +81,56 @@
 //     `
 //   };
 //   await transporter.sendMail(mailOptions);
+// }
+
+// /* ── NOTIFY SCHOOL ADMIN OF A NEW PENDING REGISTRATION ────── *
+//    Sent when a student or teacher completes OTP verification.
+//    The admin must log in and approve/reject the account.        */
+// async function sendAdminPendingApprovalEmail(school, newUser) {
+//   if (!school || !school.email) return; /* nothing to do */
+//   const roleLabel = newUser.role === 'teacher' ? 'Teacher' : 'Student';
+//   const fullName  = `${newUser.firstName || ''} ${newUser.lastName || ''}`.trim() || newUser.username;
+
+//   const mailOptions = {
+//     from    : `"EduPortal" <${process.env.EMAIL_USER}>`,
+//     to      : school.email,
+//     subject : `EduPortal — New ${roleLabel} Registration Pending Approval`,
+//     html    : `
+//       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#f4f6fb;padding:32px;border-radius:12px">
+//         <div style="background:linear-gradient(135deg,#3b5bdb,#2f4ac2);padding:24px;border-radius:10px;text-align:center;margin-bottom:24px">
+//           <h1 style="color:white;margin:0;font-size:1.6rem">🎓 iMadious</h1>
+//           <p style="color:rgba(255,255,255,.8);margin:6px 0 0">${school.name}</p>
+//         </div>
+//         <h2 style="color:#1a2236;margin-bottom:8px">New ${roleLabel} Registration</h2>
+//         <p style="color:#5a6a84;margin-bottom:20px">
+//           A new ${roleLabel.toLowerCase()} has just completed email verification for
+//           <strong>${school.name}</strong> and is awaiting your approval.
+//         </p>
+//         <table style="width:100%;background:white;border-radius:10px;border-collapse:separate;border-spacing:0 2px;padding:8px 16px;color:#1a2236">
+//           <tr><td style="padding:8px 4px;color:#5a6a84">Name</td><td style="padding:8px 4px"><strong>${fullName}</strong></td></tr>
+//           <tr><td style="padding:8px 4px;color:#5a6a84">Username</td><td style="padding:8px 4px">${newUser.username || '—'}</td></tr>
+//           <tr><td style="padding:8px 4px;color:#5a6a84">Email</td><td style="padding:8px 4px">${newUser.email || '—'}</td></tr>
+//           <tr><td style="padding:8px 4px;color:#5a6a84">Role</td><td style="padding:8px 4px">${roleLabel}</td></tr>
+//           ${newUser.class    ? `<tr><td style="padding:8px 4px;color:#5a6a84">Class</td><td style="padding:8px 4px">${newUser.class}</td></tr>`       : ''}
+//           ${newUser.department ? `<tr><td style="padding:8px 4px;color:#5a6a84">Department</td><td style="padding:8px 4px">${newUser.department}</td></tr>` : ''}
+//           ${newUser.subject  ? `<tr><td style="padding:8px 4px;color:#5a6a84">Subject</td><td style="padding:8px 4px">${newUser.subject}</td></tr>`   : ''}
+//         </table>
+//         <p style="color:#5a6a84;margin:24px 0 8px">
+//           Please log into your admin panel to review and approve or reject this registration.
+//         </p>
+//         <p style="color:#9aaabb;font-size:.8rem;text-align:center;margin-top:24px">
+//           This is an automated notification from iMadious. No action is required on this email itself.
+//         </p>
+//       </div>
+//     `,
+//   };
+
+//   try {
+//     await transporter.sendMail(mailOptions);
+//   } catch (err) {
+//     /* Never crash the registration flow if email fails */
+//     console.error('[sendAdminPendingApprovalEmail] Failed:', err.message);
+//   }
 // }
 
 // /* ═══════════════════════════════════════════════════════════
@@ -253,6 +313,20 @@
 //       /* Delete OTP record */
 //       await OTP.deleteMany({ email });
 
+//       /* Notify the school admin that a new registration is pending.
+//          Fire-and-forget — any email failure is logged but does not
+//          block the signup flow. */
+//       try {
+//         const school = await School.findById(userData.schoolId);
+//         if (school) {
+//           sendAdminPendingApprovalEmail(school, user).catch(e =>
+//             console.error('[verify-otp admin notify]', e.message)
+//           );
+//         }
+//       } catch (notifyErr) {
+//         console.error('[verify-otp admin notify lookup]', notifyErr.message);
+//       }
+
 //       res.json({
 //         success: true,
 //         message: 'Email verified! Account created successfully. Your account is pending admin approval. You will receive an email once approved.'
@@ -260,6 +334,14 @@
 
 //     } catch (err) {
 //       console.error('Verify OTP error:', err);
+//       /* Friendly handling for duplicate-key errors from Mongo */
+//       if (err && err.code === 11000) {
+//         const key = Object.keys(err.keyPattern || err.keyValue || {}).join(', ') || 'field';
+//         return res.status(400).json({
+//           success: false,
+//           message: `An account with that ${key} already exists for this school. Please use a different ${key} or sign in instead.`
+//         });
+//       }
 //       res.status(500).json({ success: false, message: err.message });
 //     }
 //   });
@@ -360,12 +442,29 @@
 //         });
 //       }
 
-//       /* Teachers and Students — check DB */
-//       const user = await User.findOne({ username, role });
+//       /* Teachers and Students — check DB.
+//          password has `select: false` on the schema, so we must
+//          explicitly include it here for bcrypt.compare. */
+//       const user = await User.findOne({ username, role }).select('+password');
 //       if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+
+//       if (!user.password) {
+//         return res.status(500).json({ success: false, message: 'Account is missing a password. Please contact your school admin to reset it.' });
+//       }
 
 //       const isMatch = await bcrypt.compare(password, user.password);
 //       if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+
+//       /* Resolve school name — prefer the denormalized copy on the user,
+//          fall back to a School lookup for older accounts that were created
+//          before we stored schoolName on the user doc. */
+//       let resolvedSchoolName = user.schoolName || '';
+//       if (!resolvedSchoolName && user.schoolId) {
+//         try {
+//           const school = await School.findById(user.schoolId).select('name');
+//           if (school) resolvedSchoolName = school.name;
+//         } catch (_) { /* non-fatal */ }
+//       }
 
 //       /* Check if user is approved (not for admin) */
 //       if (role !== 'admin' && user.approvalStatus !== 'approved') {
@@ -390,7 +489,7 @@
 //           name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
 //           class: user.class || '',
 //           schoolId: user.schoolId,
-//           schoolName: user.schoolName
+//           schoolName: resolvedSchoolName
 //         },
 //         process.env.JWT_SECRET,
 //         { expiresIn: '8h' }
@@ -406,7 +505,8 @@
 //           name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
 //           class: user.class || '',
 //           email: user.email || '',
-//           schoolId: user.schoolId || ''
+//           schoolId: user.schoolId || '',
+//           schoolName: resolvedSchoolName
 //         }
 //       });
 
@@ -615,7 +715,7 @@
 //       const { oldPassword, newPassword } = req.body;
 //       const userId = req.user.id;
 
-//       const user = await User.findById(userId);
+//       const user = await User.findById(userId).select('+password');
 //       if (!user) {
 //         return res.status(404).json({ success: false, message: 'User not found.' });
 //       }
@@ -727,6 +827,7 @@
 // module.exports = router;
 
 
+
 /* ═══════════════════════════════════════════════════════════
    EduPortal — routes/auth.js
    Handles login, OTP-based email verification for
@@ -754,20 +855,12 @@ const { requireRole } = require('../middleware/requireRole');
 require('dotenv').config();
 
 /* ── EMAIL TRANSPORTER ─────────────────────────────────────
-   Uses Gmail SMTP. Set EMAIL_USER and EMAIL_PASS in .env.
-   For Gmail: enable "App Passwords" in Google Account security.
+   Uses Brevo (Sendinblue) SMTP for reliable cloud delivery.
+   Set EMAIL_USER and EMAIL_PASS in Render environment vars.
    ─────────────────────────────────────────────────────────── */
-// const transporter = nodemailer.createTransport({
-//   service: 'gmail',
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
-
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
+  host: process.env.EMAIL_HOST || 'smtp-relay.brevo.com',
+  port: parseInt(process.env.EMAIL_PORT || '587'),
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
