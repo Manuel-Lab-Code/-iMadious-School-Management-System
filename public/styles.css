@@ -5,8 +5,8 @@
 
 /* ── CSS VARIABLES (Light Theme) ────────────────────────── */
 :root {
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Open Sans', sans-serif;
 
   /* Neutrals — Professional Slate & Indigo Scheme (Light Mode) */
   --bg: #F8FAFC;
@@ -2942,4 +2942,47 @@ table {
   .ce-submit-actions {
     flex-direction: column;
   }
+}
+/* ── Subject Checkbox Grid ─────────────────────────────────── */
+.subject-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.subject-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #2d3748;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.subject-checkbox-item:hover {
+  background: #edf2f7;
+}
+
+.subject-checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4f46e5;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.subject-checkbox-item input[type="checkbox"]:checked + span,
+.subject-checkbox-item:has(input:checked) {
+  color: #4f46e5;
+  font-weight: 600;
 }
