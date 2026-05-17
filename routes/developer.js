@@ -261,16 +261,19 @@ router.get('/schools', verifyDevKey, async (req, res) => {
       School.countDocuments(filter),
     ]);
 
-    const enriched = await Promise.all(schools.map(async (s) => {
-      const [students, teachers, exams, fees] = await Promise.all([
-        User.countDocuments({ schoolId: s._id, role: 'student' }),
-        User.countDocuments({ schoolId: s._id, role: 'teacher' }),
-        Exam.countDocuments({ schoolId: s._id }),
-        Fee.countDocuments({ schoolId: s._id }),
-      ]);
-      const { adminPassword: _, ...safe } = s;
-      return { ...safe, stats: { students, teachers, exams, fees } };
-    }));
+const enriched = await Promise.all(schools.map(async (s) => {
+  // Query by both ObjectId and string form to handle any storage inconsistency
+  const sid = s._id;
+  const [students, teachers, exams, fees] = await Promise.all([
+    User.countDocuments({ $or: [{ schoolId: sid }, { schoolId: sid.toString() }], role: 'student' }),
+    User.countDocuments({ $or: [{ schoolId: sid }, { schoolId: sid.toString() }], role: 'teacher' }),
+    Exam.countDocuments({ $or: [{ schoolId: sid }, { schoolId: sid.toString() }] }),
+    Fee.countDocuments({ $or: [{ schoolId: sid }, { schoolId: sid.toString() }] }),
+  ]);
+  console.log(`[DEV/schools] ${s.name} → students:${students} teachers:${teachers} exams:${exams}`);
+  const { adminPassword: _, ...safe } = s;
+  return { ...safe, students, teachers, exams, fees, stats: { students, teachers, exams, fees } };
+}));
 
     res.json({ total, page: Number(page), schools: enriched });
   } catch (err) {
