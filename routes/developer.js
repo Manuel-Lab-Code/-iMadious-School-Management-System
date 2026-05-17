@@ -50,9 +50,9 @@ async function sendSchoolWelcomeEmail(school, plainPassword, requestHost) {
   const base  = requestHost ? `http://${requestHost}` : '';
   const login = base + '/login/' + (school.slug || '');
   const mailOptions = {
-    from    : `"EduPortal" <${process.env.EMAIL_USER}>`,
+    from    : `"iMadious EduPortal" <${process.env.EMAIL_USER}>`,
     to      : school.email,
-    subject : `Welcome to EduPortal — ${school.name} is now active`,
+    subject : `Welcome to iMadious EduPortal — ${school.name} is now active`,
     html    : `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#f4f6fb;padding:32px;border-radius:12px">
         <div style="background:linear-gradient(135deg,#3b5bdb,#2f4ac2);padding:24px;border-radius:10px;text-align:center;margin-bottom:24px">
