@@ -202,9 +202,9 @@ function renderSchoolsTable(schools) {
             <td style="white-space:nowrap;">${esc(school.phone || '—')}</td>
             <td style="white-space:nowrap;">${esc(school.email || '—')}</td>
             <td style="white-space:nowrap;">${regDate}</td>
-            <td><span class="badge badge-blue">${school.students ?? 0}</span></td>
-            <td><span class="badge badge-green">${school.teachers ?? 0}</span></td>
-            <td><span class="badge badge-yellow">${school.exams ?? 0}</span></td>
+              <td><span class="badge badge-blue">${school.stats?.students ?? school.students ?? 0}</span></td>
+              <td><span class="badge badge-green">${school.stats?.teachers ?? school.teachers ?? 0}</span></td>
+              <td><span class="badge badge-yellow">${school.stats?.exams ?? school.exams ?? 0}</span></td>
             <td>
               <div class="action-buttons">
                 <button class="btn btn-warning btn-sm" onclick="openEditModal('${school._id}')">✏️ Edit</button>
