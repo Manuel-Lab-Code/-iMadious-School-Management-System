@@ -94,9 +94,9 @@ function generateOTP() {
 async function sendOTPEmail(email, otp, name, role) {
   const roleLabel = role === 'teacher' ? 'Teacher' : 'Student';
   const mailOptions = {
-    from: `"EduPortal" <${process.env.EMAIL_USER}>`,
+    from: `"iMadious EduPortal" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'EduPortal — Your Email Verification Code',
+    subject: 'Your Email Verification Code',
     html: `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#f4f6fb;padding:32px;border-radius:12px">
         <div style="background:linear-gradient(135deg,#3b5bdb,#2f4ac2);padding:24px;border-radius:10px;text-align:center;margin-bottom:24px">
@@ -131,9 +131,9 @@ async function sendAdminPendingApprovalEmail(school, newUser) {
   const fullName  = `${newUser.firstName || ''} ${newUser.lastName || ''}`.trim() || newUser.username;
 
   const mailOptions = {
-    from    : `"EduPortal" <${process.env.EMAIL_USER}>`,
+    from    : `"iMadious EduPortal" <${process.env.EMAIL_USER}>`,
     to      : school.email,
-    subject : `EduPortal — New ${roleLabel} Registration Pending Approval`,
+    subject : `New ${roleLabel} Registration Pending Approval`,
     html    : `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#f4f6fb;padding:32px;border-radius:12px">
         <div style="background:linear-gradient(135deg,#3b5bdb,#2f4ac2);padding:24px;border-radius:10px;text-align:center;margin-bottom:24px">
