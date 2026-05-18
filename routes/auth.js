@@ -696,21 +696,39 @@ router.post('/admin/reset-password',
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { userId } = req.body;
+      // const { userId } = req.body;
 
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found.' });
-      }
+      // const user = await User.findById(userId);
+      // if (!user) {
+      //   return res.status(404).json({ success: false, message: 'User not found.' });
+      // }
 
-      // Prevent resetting admin password this way
-      if (user.role === 'admin') {
-        return res.status(403).json({ success: false, message: 'Cannot reset admin password via this endpoint.' });
-      }
+      // // Prevent resetting admin password this way
+      // if (user.role === 'admin') {
+      //   return res.status(403).json({ success: false, message: 'Cannot reset admin password via this endpoint.' });
+      // }
 
-      /* Generate temporary password */
-      const tempPassword = generateTemporaryPassword();
-      const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
+      // /* Generate temporary password */
+      // const tempPassword = generateTemporaryPassword();
+      // const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
+
+      const { userId, newPassword } = req.body;
+
+          const user = await User.findById(userId);
+          if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+          }
+          
+          // Prevent resetting admin password this way
+          if (user.role === 'admin') {
+            return res.status(403).json({ success: false, message: 'Cannot reset admin password via this endpoint.' });
+          }
+          
+          /* Use custom password if provided, otherwise auto-generate */
+          const tempPassword = (newPassword && newPassword.trim().length >= 6)
+            ? newPassword.trim()
+            : generateTemporaryPassword();
+          const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
 
       /* Update user password */
       user.password = hashedTempPassword;
