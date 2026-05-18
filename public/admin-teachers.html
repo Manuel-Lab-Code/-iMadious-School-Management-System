@@ -304,6 +304,60 @@
     .btn-reset:hover {
       background: #E68900;
     }
+    .reset-password-section {
+  margin-top: 16px;
+  border: 1.5px solid #fed7aa;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff7ed;
+}
+
+.reset-desc {
+  font-size: 12.5px;
+  color: #92400e;
+  margin: 4px 0 12px;
+}
+
+.reset-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reset-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.reset-option input[type="radio"] {
+  accent-color: #f97316;
+  width: 15px;
+  height: 15px;
+}
+
+.success-message {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
 
     .button-group {
       display: flex;
@@ -664,11 +718,32 @@
                 <input type="number" id="editSalary" value="${teacher.salary || 0}" step="0.01">
               </div>
             </div>
-            <div class="button-group">
-              <button class="btn-save" onclick="saveTeacherChanges('${teacherId}')">Save Changes</button>
-              <button class="btn-delete" onclick="deleteTeacher('${teacherId}')">Delete Teacher</button>
-              <button class="btn-reset" onclick="resetTeacherPassword('${teacherId}')">🔑 Reset Password</button>
+           <div class="button-group">
+            <button class="btn-save" onclick="saveTeacherChanges('${teacherId}')">Save Changes</button>
+            <button class="btn-delete" onclick="deleteTeacher('${teacherId}')">Delete Teacher</button>
+          </div>
+          <div class="form-section reset-password-section">
+            <div class="form-section-title">🔑 Reset Password</div>
+            <p class="reset-desc">Generate a new temporary password and send it to the teacher's email address.</p>
+            <div id="resetMessage"></div>
+            <div class="reset-options">
+              <label class="reset-option">
+                <input type="radio" name="resetType" value="auto" checked>
+                <span>Auto-generate a secure temporary password</span>
+              </label>
+              <label class="reset-option">
+                <input type="radio" name="resetType" value="manual">
+                <span>Set a custom new password</span>
+              </label>
             </div>
+            <div id="customPasswordField" style="display:none; margin-top:10px;">
+              <input type="password" id="newCustomPassword" placeholder="Enter new password (min 6 chars)"
+                style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;">
+            </div>
+            <button class="btn-reset" style="margin-top:14px;width:100%;" onclick="resetTeacherPassword('${teacherId}')">
+              🔑 Reset &amp; Send Password
+            </button>
+          </div>
           </div>
         `;
       } catch (err) {
@@ -731,33 +806,89 @@
       }
     }
 
-    async function resetTeacherPassword(teacherId) {
-      const teacherName = document.getElementById('editFirstName').value + ' ' + document.getElementById('editLastName').value;
-      if (!confirm(`🔑 Send a password reset link to ${teacherName}? They will receive a temporary password via email.`)) {
-        return;
-      }
+    // async function resetTeacherPassword(teacherId) {
+    //   const teacherName = document.getElementById('editFirstName').value + ' ' + document.getElementById('editLastName').value;
+    //   if (!confirm(`🔑 Send a password reset link to ${teacherName}? They will receive a temporary password via email.`)) {
+    //     return;
+    //   }
 
-      try {
-        const response = await fetch(`/api/auth/admin/reset-password`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ userId: teacherId })
-        });
+    //   try {
+    //     const response = await fetch(`/api/auth/admin/reset-password`, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Authorization': `Bearer ${token}`,
+    //         'Content-Type': 'application/json'
+    //       },
+    //       body: JSON.stringify({ userId: teacherId })
+    //     });
 
-        if (response.ok) {
-          const data = await response.json();
-          alert(`✓ Password reset successful! Temporary password sent to ${data.userDetails.email}`);
-        } else {
-          const errorData = await response.json();
-          alert(`✗ ${errorData.message || 'Failed to reset password'}`);
-        }
-      } catch (err) {
-        alert('✗ Error resetting password: ' + err.message);
-      }
+    //     if (response.ok) {
+    //       const data = await response.json();
+    //       alert(`✓ Password reset successful! Temporary password sent to ${data.userDetails.email}`);
+    //     } else {
+    //       const errorData = await response.json();
+    //       alert(`✗ ${errorData.message || 'Failed to reset password'}`);
+    //     }
+    //   } catch (err) {
+    //     alert('✗ Error resetting password: ' + err.message);
+    //   }
+    // }
+
+    document.addEventListener('change', function(e) {
+  if (e.target.name === 'resetType') {
+    const customField = document.getElementById('customPasswordField');
+    if (customField) customField.style.display = e.target.value === 'manual' ? 'block' : 'none';
+  }
+});
+
+async function resetTeacherPassword(teacherId) {
+  const msgDiv = document.getElementById('resetMessage');
+  const resetType = document.querySelector('input[name="resetType"]:checked')?.value || 'auto';
+  const customPassword = document.getElementById('newCustomPassword')?.value?.trim();
+
+  if (resetType === 'manual') {
+    if (!customPassword || customPassword.length < 6) {
+      msgDiv.innerHTML = '<div class="error-message">✗ Password must be at least 6 characters.</div>';
+      return;
     }
+  }
+
+  const teacherName = document.getElementById('editFirstName').value + ' ' + document.getElementById('editLastName').value;
+  if (!confirm(`Reset password for ${teacherName}? A new password will be sent to their email.`)) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msgDiv.innerHTML = '';
+
+  try {
+    const body = { userId: teacherId };
+    if (resetType === 'manual') body.newPassword = customPassword;
+
+    const response = await fetch(`/api/auth/admin/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      msgDiv.innerHTML = `<div class="success-message">✓ Password reset! New password sent to ${data.userDetails.email}</div>`;
+      if (document.getElementById('newCustomPassword')) document.getElementById('newCustomPassword').value = '';
+    } else {
+      msgDiv.innerHTML = `<div class="error-message">✗ ${data.message || 'Failed to reset password'}</div>`;
+    }
+  } catch (err) {
+    msgDiv.innerHTML = `<div class="error-message">✗ ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔑 Reset &amp; Send Password';
+  }
+}
+    
 
     async function loadPendingTeachers() {
       try {
