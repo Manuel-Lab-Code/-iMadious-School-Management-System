@@ -536,6 +536,30 @@
           </select>
         </div>
         <input type="hidden" id="teacherId" />
+
+        <!-- Reset Password Section — only shown when editing existing teacher -->
+        <div id="resetPasswordSection" style="display:none; margin-top:16px; padding:16px; background:#fff7ed; border:2px solid #f97316; border-radius:10px;">
+          <div style="font-weight:700; color:#c2410c; font-size:14px; margin-bottom:6px;">🔑 Reset Teacher Password</div>
+          <p style="font-size:12.5px; color:#92400e; margin:0 0 12px;">Send a new password to this teacher's email.</p>
+          <div id="resetPasswordMsg"></div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="radio" name="resetTypeModal" value="auto" checked> Auto-generate a secure password
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+              <input type="radio" name="resetTypeModal" value="manual"> Set a custom password
+            </label>
+          </div>
+          <div id="customPasswordModal" style="display:none; margin-bottom:12px;">
+            <input type="password" id="newPasswordModal" placeholder="Enter new password (min 6 chars)"
+              style="width:100%; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; box-sizing:border-box;">
+          </div>
+          <button type="button" id="resetPasswordBtn" style="width:100%; padding:11px; background:#f97316; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;"
+            onclick="resetTeacherPasswordFromModal()">
+            🔑 Reset &amp; Send Password
+          </button>
+        </div>
+
         <div class="modal-footer">
           <button type="button" class="btn-secondary" onclick="closeTeacherModal()">Cancel</button>
           <button type="submit" class="btn-primary">Save Teacher</button>
