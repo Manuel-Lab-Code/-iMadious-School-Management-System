@@ -1006,9 +1006,63 @@ function openTeacherModal(id) {
     setVal('teacherEmploymentDate', '');
     setVal('teacherId', '');
   }
+// Show reset password section only when editing an existing teacher
+  var resetSection = $('resetPasswordSection');
+  if (resetSection) {
+    resetSection.style.display = id ? 'block' : 'none';
+    var resetMsg = $('resetPasswordMsg');
+    if (resetMsg) resetMsg.innerHTML = '';
+    var customPwd = $('newPasswordModal');
+    if (customPwd) customPwd.value = '';
+    var autoRadio = document.querySelector('input[name="resetTypeModal"][value="auto"]');
+    if (autoRadio) { autoRadio.checked = true; }
+    var customField = $('customPasswordModal');
+    if (customField) customField.style.display = 'none';
+  }
   $('teacherModalOverlay').classList.remove('hidden');
 }
 function closeTeacherModal() { $('teacherModalOverlay').classList.add('hidden'); }
+
+document.addEventListener('change', function(e) {
+  if (e.target.name === 'resetTypeModal') {
+    var cf = $('customPasswordModal');
+    if (cf) cf.style.display = e.target.value === 'manual' ? 'block' : 'none';
+  }
+});
+
+async function resetTeacherPasswordFromModal() {
+  var teacherId = getVal('teacherId');
+  if (!teacherId) return;
+  var btn = $('resetPasswordBtn');
+  var msgDiv = $('resetPasswordMsg');
+  var resetType = document.querySelector('input[name="resetTypeModal"]:checked')?.value || 'auto';
+  var customPassword = $('newPasswordModal')?.value?.trim();
+
+  if (resetType === 'manual' && (!customPassword || customPassword.length < 6)) {
+    msgDiv.innerHTML = '<div style="color:#dc2626;font-size:12px;margin-bottom:8px;">✗ Password must be at least 6 characters.</div>';
+    return;
+  }
+
+  if (!confirm('Reset password for this teacher? A new password will be sent to their email.')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msgDiv.innerHTML = '';
+
+  try {
+    var body = { userId: teacherId };
+    if (resetType === 'manual') body.newPassword = customPassword;
+    var data = await Api.post('/auth/admin/reset-password', body);
+    msgDiv.innerHTML = '<div style="color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;font-size:12.5px;">✓ Password reset! Sent to ' + data.userDetails.email + '</div>';
+    if ($('newPasswordModal')) $('newPasswordModal').value = '';
+  } catch (err) {
+    msgDiv.innerHTML = '<div style="color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12.5px;">✗ ' + (err.message || 'Failed to reset password') + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔑 Reset &amp; Send Password';
+  }
+}
+
 function editTeacher(id) { openTeacherModal(id); }
 async function saveTeacher(e) {
   e.preventDefault();
