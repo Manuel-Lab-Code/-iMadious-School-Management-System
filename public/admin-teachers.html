@@ -305,12 +305,27 @@
     .btn-reset:hover {
       background: #E68900;
     }
-    .reset-password-section {
+    /* .reset-password-section {
   margin-top: 16px;
   border: 1.5px solid #fed7aa;
   border-radius: 10px;
   padding: 16px;
   background: #fff7ed;
+} */
+    .reset-password-section {
+  margin-top: 24px;
+  border: 2px solid #f97316;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fff7ed;
+  box-shadow: 0 2px 12px rgba(249,115,22,0.15);
+}
+
+.reset-password-section .form-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #c2410c;
+  margin-bottom: 6px;
 }
 
 .reset-desc {
@@ -723,8 +738,12 @@
             <button class="btn-save" onclick="saveTeacherChanges('${teacherId}')">Save Changes</button>
             <button class="btn-delete" onclick="deleteTeacher('${teacherId}')">Delete Teacher</button>
           </div>
-          <div class="form-section reset-password-section">
-            <div class="form-section-title">🔑 Reset Password</div>
+          // <div class="form-section reset-password-section">
+          //   <div class="form-section-title">🔑 Reset Password</div>
+          <div style="text-align:center;margin:20px 0 4px;color:#94a3b8;font-size:12px;">▼ Scroll down for Password Reset</div>
+            <hr style="border:none;border-top:2px dashed #e2e8f0;margin-bottom:20px;">
+            <div class="form-section reset-password-section">
+              <div class="form-section-title">🔑 Reset Teacher Password</div>
             <p class="reset-desc">Generate a new temporary password and send it to the teacher's email address.</p>
             <div id="resetMessage"></div>
             <div class="reset-options">
