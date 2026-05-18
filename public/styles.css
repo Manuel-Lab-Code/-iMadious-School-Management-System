@@ -2993,4 +2993,42 @@ table {
 .subject-checkbox-item:has(input:checked) {
   color: #4f46e5;
   font-weight: 600;
+}/* ── Fullscreen Modal (Edit Teacher) ──────────────────────── */
+.modal-fullscreen {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
 }
+
+.modal-fullscreen .modal-header {
+  flex-shrink: 0;
+  padding: 18px 28px;
+}
+
+.modal-fullscreen form {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-fullscreen .modal-footer {
+  flex-shrink: 0;
+  padding: 16px 28px;
+}
+
+.modal-overlay:has(.modal-fullscreen) {
+  padding: 0 !important;
+  align-items: stretch !important;
+}
+
+
+
