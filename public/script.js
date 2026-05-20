@@ -1028,6 +1028,12 @@ document.addEventListener('change', function(e) {
     var cf = $('customPasswordModal');
     if (cf) cf.style.display = e.target.value === 'manual' ? 'block' : 'none';
   }
+  if (e.target.name === 'resetTypeModal') {
+    document.querySelectorAll('.reset-pwd-option').forEach(function(opt) {
+      opt.style.borderColor = opt.querySelector('input').checked ? '#f97316' : '#fed7aa';
+      opt.style.background  = opt.querySelector('input').checked ? '#fff7ed' : '#fff';
+    });
+  }
 });
 
 async function resetTeacherPasswordFromModal() {
