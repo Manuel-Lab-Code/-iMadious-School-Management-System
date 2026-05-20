@@ -3030,5 +3030,157 @@ table {
   align-items: stretch !important;
 }
 
+/* ── Reset Teacher Password Section (Edit Modal) ──────────── */
+.reset-pwd-section {
+  display: none;
+  margin: 20px 0 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #fed7aa;
+  background: #fff7ed;
+}
 
+.reset-pwd-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: #fff;
+}
+
+.reset-pwd-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.reset-pwd-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.reset-pwd-subtitle {
+  font-size: 11.5px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.reset-pwd-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 0;
+}
+
+.reset-pwd-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1.5px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.reset-pwd-option:hover {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.reset-pwd-option input[type="radio"] {
+  accent-color: #f97316;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.reset-pwd-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reset-pwd-option-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.reset-pwd-option-desc {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.reset-pwd-custom {
+  display: none;
+  padding: 12px 16px 0;
+}
+
+.reset-pwd-custom input {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid #fed7aa;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.reset-pwd-custom input:focus {
+  border-color: #f97316;
+}
+
+.reset-pwd-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 14px 16px 16px;
+  padding: 11px;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 3px 10px rgba(249,115,22,0.35);
+}
+
+.reset-pwd-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.reset-pwd-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reset-pwd-msg-success {
+  margin: 10px 16px 0;
+  padding: 9px 12px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.reset-pwd-msg-error {
+  margin: 10px 16px 0;
+  padding: 9px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
 
