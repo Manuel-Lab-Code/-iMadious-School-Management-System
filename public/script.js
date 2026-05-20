@@ -1052,11 +1052,11 @@ async function resetTeacherPasswordFromModal() {
   try {
     var body = { userId: teacherId };
     if (resetType === 'manual') body.newPassword = customPassword;
-    var data = await Api.post('/auth/admin/reset-password', body);
-    msgDiv.innerHTML = '<div style="color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;font-size:12.5px;">✓ Password reset! Sent to ' + data.userDetails.email + '</div>';
+   var data = await Api.post('/auth/admin/reset-password', body);
+    msgDiv.innerHTML = '<div class="reset-pwd-msg-success">✓ Password reset! New password sent to ' + data.userDetails.email + '</div>';
     if ($('newPasswordModal')) $('newPasswordModal').value = '';
   } catch (err) {
-    msgDiv.innerHTML = '<div style="color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12.5px;">✗ ' + (err.message || 'Failed to reset password') + '</div>';
+    msgDiv.innerHTML = '<div class="reset-pwd-msg-error">✗ ' + (err.message || 'Failed to reset password') + '</div>';
   } finally {
     btn.disabled = false;
     btn.innerHTML = '🔑 Reset &amp; Send Password';
