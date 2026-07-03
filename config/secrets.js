@@ -108,12 +108,18 @@ const REQUIRED_VARS = [
  * Optional environment variables with defaults
  * @type {Object<string, any>}
  */
+// const OPTIONAL_VARS = {
+//     PORT: 5000,
+//     NODE_ENV: 'development',
+//     ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:5000'
+// }; Replaced with bellow
 const OPTIONAL_VARS = {
     PORT: 5000,
     NODE_ENV: 'development',
-    ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:5000'
+    ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:5000',
+    ANTHROPIC_API_KEY: '',
+    ANTHROPIC_MODEL: 'claude-sonnet-5'
 };
-
 /**
  * Validate all environment variables at startup
  * Throws fatal error if any required var is missing
