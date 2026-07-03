@@ -306,7 +306,9 @@ app.use('/api/subject-results', require('./routes/subjectResults'));
 // app.use('/api/debug',           require('./routes/debug'));
 app.use('/api/subjects',        require('./routes/subjects'));
 app.use('/api/debug',           require('./routes/debug'));
+// app.use('/api/ai',              require('./routes/aiExam'));
 app.use('/api/ai',              require('./routes/aiExam'));
+app.use('/api/report-cards',    require('./routes/reportCards'));
 
 /* ── SPA FALLBACK ────────────────────────────────────────────── */
 app.get(/^\/(?!api\/)/, (req, res) => {
