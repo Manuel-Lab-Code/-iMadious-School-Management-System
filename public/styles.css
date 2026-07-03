@@ -3268,3 +3268,41 @@ table {
   min-width: 0;
 }
 
+/* ── REPORT CARDS (Admin) ────────────────────────────────── */
+#reportCardPrintArea .data-table th,
+#reportCardPrintArea .data-table td {
+  padding: 10px 14px;
+}
+
+@media print {
+  .sidebar,
+  .sidebar-overlay,
+  .topbar,
+  .hamburger,
+  .no-print {
+    display: none !important;
+  }
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #reportCardPrintArea,
+  #reportCardPrintArea * {
+    visibility: visible;
+  }
+  #reportCardPrintArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+
+
+
