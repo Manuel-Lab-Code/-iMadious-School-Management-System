@@ -496,3 +496,202 @@ function ecSetVal(id,v){ var e=document.getElementById(id); if(e) e.value=v; }
 function ecShowErr(el,msg){ if(el){el.textContent=msg;el.style.display='block';} }
 function ecToast(msg,type){ if(typeof showToast==='function') showToast(msg,type); else console.log('[Toast]',msg); }
 function ecConfirm(title,msg,cb){ if(typeof confirm2==='function') confirm2(title,msg,cb); else if(window.confirm(msg)) cb(); }
+
+/* ══════════════════════════════════════════════════════════
+   AI EXAM QUESTION GENERATOR
+   Calls POST /api/ai/generate-exam and lets the teacher
+   review/select generated questions before inserting them
+   into the current draft (EC.objQuestions / EC.theoryQuestions).
+   Namespaced under AIGen{} — does not touch EC state until
+   the teacher explicitly clicks "Insert Selected Questions".
+   ══════════════════════════════════════════════════════════ */
+var AIGen = {
+  objective : [],   // last generated objective questions
+  theory    : [],   // last generated theory questions
+  exObj     : {},   // excluded objective indices { idx: true }
+  exTheory  : {},   // excluded theory indices { idx: true }
+  insertMode: 'append'
+};
+
+function aiOpenModal(){
+  ecCollectDOM();
+  var subject = ecGetVal('examSubject');
+  var cls     = ecGetVal('examClass');
+  var errEl   = document.getElementById('aiGenError');
+  if(errEl){ errEl.textContent=''; errEl.style.display='none'; }
+  if(!subject || !cls){
+    ecToast('Please select Subject and Target Class above before generating with AI.','error');
+    return;
+  }
+  aiSetStage('form');
+  var ov = document.getElementById('aiGenOverlay');
+  if(ov) ov.classList.remove('hidden');
+}
+
+function aiCloseModal(){
+  var ov = document.getElementById('aiGenOverlay');
+  if(ov) ov.classList.add('hidden');
+}
+
+function aiSetStage(stage){
+  var form    = document.getElementById('aiGenForm');
+  var loading = document.getElementById('aiGenLoading');
+  var preview = document.getElementById('aiGenPreview');
+  var footer  = document.getElementById('aiGenFooter');
+  if(!form||!loading||!preview||!footer) return;
+
+  form.classList.toggle('hidden',    stage!=='form');
+  loading.classList.toggle('hidden', stage!=='loading');
+  preview.classList.toggle('hidden', stage!=='preview');
+
+  if(stage==='form'){
+    footer.innerHTML =
+      '<button class="btn-secondary" onclick="aiCloseModal()">Cancel</button>'+
+      '<button class="btn-primary" id="aiGenerateBtn" onclick="aiGenerate()">✨ Generate Questions</button>';
+  } else if(stage==='loading'){
+    footer.innerHTML = '<button class="btn-secondary" disabled>Please wait…</button>';
+  } else if(stage==='preview'){
+    footer.innerHTML =
+      '<button class="btn-secondary" onclick="aiSetStage(\'form\')">↩ Back</button>'+
+      '<button class="btn-primary" onclick="aiInsertSelected()">✅ Insert Selected Questions</button>';
+  }
+}
+
+async function aiGenerate(){
+  var errEl = document.getElementById('aiGenError');
+  if(errEl){ errEl.textContent=''; errEl.style.display='none'; }
+
+  var payload = {
+    subject     : ecGetVal('examSubject'),
+    targetClass : ecGetVal('examClass'),
+    session     : ecGetVal('examSession'),
+    term        : ecGetVal('examTerm'),
+    topic       : (document.getElementById('aiTopic')||{}).value || '',
+    difficulty  : (document.getElementById('aiDifficulty')||{}).value || 'medium',
+    numObjective: parseInt((document.getElementById('aiNumObjective')||{}).value,10) || 0,
+    numTheory   : parseInt((document.getElementById('aiNumTheory')||{}).value,10) || 0
+  };
+  AIGen.insertMode = (document.getElementById('aiInsertMode')||{}).value || 'append';
+
+  if(payload.numObjective<=0 && payload.numTheory<=0){
+    return ecShowErr(errEl,'Please request at least one objective or theory question.');
+  }
+
+  aiSetStage('loading');
+  try{
+    if(typeof Api==='undefined') throw new Error('API not available. Make sure server is running.');
+    var res = await Api.post('/ai/generate-exam', payload);
+    AIGen.objective = res.objective || [];
+    AIGen.theory    = res.theory    || [];
+    AIGen.exObj     = {};
+    AIGen.exTheory  = {};
+    if(AIGen.objective.length===0 && AIGen.theory.length===0){
+      aiSetStage('form');
+      return ecShowErr(errEl,'The AI did not return any usable questions. Try again or adjust the topic.');
+    }
+    aiRenderPreview();
+    aiSetStage('preview');
+  }catch(e){
+    aiSetStage('form');
+    ecShowErr(errEl, e.message || 'Generation failed. Please try again.');
+  }
+}
+
+function aiRenderPreview(){
+  var cont = document.getElementById('aiGenPreview');
+  if(!cont) return;
+  var L = ['A','B','C','D'];
+  var html = '<div class="ai-preview-summary">✨ Generated '+AIGen.objective.length+' objective and '+
+    AIGen.theory.length+' theory question(s). Untick any you don\'t want, then insert.</div>';
+
+  if(AIGen.objective.length>0){
+    html += '<div class="preview-section-title">SECTION A — OBJECTIVE</div>';
+    AIGen.objective.forEach(function(q,i){
+      var excluded = !!AIGen.exObj[i];
+      html += '<div class="ai-q-block '+(excluded?'excluded':'')+'" id="aiqobj_'+i+'">'+
+        '<input type="checkbox" '+(excluded?'':'checked')+' onchange="aiToggleQ(\'obj\','+i+')"/>'+
+        '<div class="ai-q-body">'+
+          '<div class="preview-q-meta"><span class="preview-q-num">Q'+(i+1)+'</span><span class="preview-marks-tag">'+q.marks+' mark'+(q.marks!==1?'s':'')+'</span></div>'+
+          '<div class="preview-q-text">'+ecEsc(q.text)+'</div>';
+      q.options.forEach(function(o,oi){
+        html += '<div class="preview-opt-row '+(oi===q.answer?'correct-opt':'')+'"><span>'+L[oi]+'.</span><span>'+ecEsc(o)+(oi===q.answer?' &nbsp;✓':'')+'</span></div>';
+      });
+      html += '</div></div>';
+    });
+  }
+  if(AIGen.theory.length>0){
+    html += '<div class="preview-section-title">SECTION B — THEORY</div>';
+    AIGen.theory.forEach(function(q,i){
+      var excluded = !!AIGen.exTheory[i];
+      html += '<div class="ai-q-block '+(excluded?'excluded':'')+'" id="aiqtheory_'+i+'">'+
+        '<input type="checkbox" '+(excluded?'':'checked')+' onchange="aiToggleQ(\'theory\','+i+')"/>'+
+        '<div class="ai-q-body">'+
+          '<div class="preview-q-meta"><span class="preview-q-num">Q'+(i+1)+'</span><span class="preview-marks-tag">'+q.marks+' mark'+(q.marks!==1?'s':'')+'</span></div>'+
+          '<div class="preview-q-text">'+ecEsc(q.text)+'</div>'+
+          (q.guide?'<div class="preview-theory-guide">📋 <strong>Marking Guide:</strong> '+ecEsc(q.guide)+'</div>':'')+
+        '</div></div>';
+    });
+  }
+  cont.innerHTML = html;
+}
+
+function aiToggleQ(type, idx){
+  var map = (type==='obj') ? AIGen.exObj : AIGen.exTheory;
+  map[idx] = !map[idx];
+  var block = document.getElementById((type==='obj'?'aiqobj_':'aiqtheory_')+idx);
+  if(block) block.classList.toggle('excluded', !!map[idx]);
+}
+
+function aiInsertSelected(){
+  ecCollectDOM();
+  var addedObj = 0, addedTheory = 0;
+
+  if(AIGen.insertMode==='replace'){
+    EC.objQuestions    = [];
+    EC.theoryQuestions = [];
+  }
+
+  AIGen.objective.forEach(function(q,i){
+    if(AIGen.exObj[i]) return;
+    var nq = ecNewObj();
+    nq.text    = q.text;
+    nq.options = q.options.slice(0,4);
+    nq.answer  = q.answer;
+    nq.marks   = q.marks;
+    EC.objQuestions.push(nq);
+    addedObj++;
+  });
+  AIGen.theory.forEach(function(q,i){
+    if(AIGen.exTheory[i]) return;
+    var nq = ecNewTheory();
+    nq.text  = q.text;
+    nq.guide = q.guide || '';
+    nq.marks = q.marks;
+    EC.theoryQuestions.push(nq);
+    addedTheory++;
+  });
+
+  /* Remove the single blank placeholder question if it's still empty
+     and we just inserted real AI questions alongside it. */
+  if(addedObj>0){
+    EC.objQuestions = EC.objQuestions.filter(function(q,i,arr){
+      return q.text.trim()!=='' || arr.length===1;
+    });
+  }
+  if(addedTheory>0){
+    EC.theoryQuestions = EC.theoryQuestions.filter(function(q,i,arr){
+      return q.text.trim()!=='' || arr.length===1;
+    });
+  }
+
+  ecRenderAll();
+  ecUpdateSummary(); ecUpdateCounts(); scheduleAutosave();
+  aiCloseModal();
+  ecToast('✨ Inserted '+addedObj+' objective and '+addedTheory+' theory question(s).','success');
+}
+
+
+
+
+
+
