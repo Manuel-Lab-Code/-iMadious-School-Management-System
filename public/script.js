@@ -114,6 +114,7 @@ var TITLES = {
   'my-exams': 'My Exams', submissions: 'Student Submissions',
   marking: 'Mark & Submit Results', 'test-scores': 'Enter Test Scores',
   'test-release': 'Release Test Scores', 'subject-results': 'Compound Results'
+  'report-cards': 'Student Report Cards'
 };
 function showSection(name) {
   document.querySelectorAll('.dash-section').forEach(function (s) { s.classList.remove('active'); });
@@ -144,6 +145,7 @@ function renderSection(name) {
     if (name === 'fees') renderFeesTable();
     if (name === 'test-release') renderAdminTestScores('pending');
     if (name === 'subject-results') loadAdminSubjectResults();
+    if (name === 'report-cards' && typeof rcInit === 'function') rcInit();
   }
   if (s.role === 'teacher') {
     if (name === 'overview') renderTeacherOverview(s);
