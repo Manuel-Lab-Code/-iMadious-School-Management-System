@@ -425,19 +425,62 @@
         </div>
       </div>
 
-      <!-- <div id="subjectResultsList"></div>
-    </section> -->
       <div id="subjectResultsList"></div>
     </section>
 
     <!-- ── REPORT CARDS ─────────────────────────────────────── -->
     <section class="dash-section" id="section-report-cards">
-      ... (paste the full section block I gave you earlier) ...
+      <div class="section-header-row">
+        <div>
+          <h2>🧾 Student Report Cards</h2>
+          <p>Generate, review, comment on, and release a full term report card for any student.</p>
+        </div>
+      </div>
+
+      <!-- Picker Bar -->
+      <div class="card" style="padding:16px 20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:14px">
+          <div class="form-group" style="margin:0">
+            <label>Class</label>
+            <select id="rcClassFilter" onchange="rcLoadStudentOptions()">
+              <option value="">Select Class</option>
+              <option>JSS 1</option>
+              <option>JSS 2</option>
+              <option>JSS 3</option>
+              <option>SSS 1</option>
+              <option>SSS 2</option>
+              <option>SSS 3</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Student</label>
+            <select id="rcStudentSelect">
+              <option value="">Select class first…</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Session</label>
+            <select id="rcSessionFilter">
+              <option>2024/2025</option>
+              <option selected>2025/2026</option>
+              <option>2026/2027</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Term</label>
+            <select id="rcTermFilter">
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="rcGenerate()">🧾 Generate Report Card</button>
+      </div>
+
+      <div id="reportCardWrap"></div>
     </section>
-
-  </main>
-
-  </main>
+    </main>
 
   <!-- ── MODALS ────────────────────────────────────────────── -->
 
