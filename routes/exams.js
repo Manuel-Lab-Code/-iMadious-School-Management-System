@@ -241,7 +241,7 @@ router.get('/', async (req, res) => {
         return matches;
       });
       console.log(`[GET /exams student] filtered to ${visible.length} exams matching class`);
-      return res.json(visible);
+      return res.json(visible.map(sanitizeExamForStudent));
     }
 
     /* Teachers + admins — full school-scoped list */
