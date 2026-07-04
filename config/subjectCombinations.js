@@ -3,6 +3,28 @@
    Defines subject combinations for all departments and class levels.
    ═══════════════════════════════════════════════════════════ */
 
+// const JSS_SUBJECTS = [
+//   'English Studies',
+//   'Mathematics',
+//   'Basic Science',
+//   'Basic Technology',
+//   'Social Studies',
+//   'Civic Education',
+//   'Security Education',
+//   'Physical & Health Education (PHE)',
+//   'Computer Studies / ICT',
+//   'Business Studies',
+//   'Home Economics',
+//   'Agricultural Science',
+//   'Cultural and Creative Arts (CCA)',
+//   'French Language',
+//   'Arabic Language',
+//   'Nigerian Language (Yoruba / Igbo / Hausa)',
+//   'Christian Religious Studies (CRS)',
+//   'Islamic Religious Studies (IRS)',
+//   'History',
+//   'Digital Literacy / Coding'
+// ];
 const JSS_SUBJECTS = [
   'English Studies',
   'Mathematics',
@@ -23,8 +45,44 @@ const JSS_SUBJECTS = [
   'Christian Religious Studies (CRS)',
   'Islamic Religious Studies (IRS)',
   'History',
-  'Digital Literacy / Coding'
+  'Digital Technology'
 ];
+
+// const DEPARTMENT_SUBJECTS = {
+//   SCIENCE: [
+//     'English Language',
+//     'Mathematics',
+//     'Biology',
+//     'Chemistry',
+//     'Physics',
+//     'Further Math',
+//     'Agric',
+//     'ICT',
+//     'Civic Education'
+//   ],
+//   ART: [
+//     'English Language',
+//     'Mathematics',
+//     'Literature in English',
+//     'Government',
+//     'Economics',
+//     'CRS or IRS',
+//     'History',
+//     'ICT',
+//     'Civic Education'
+//   ],
+//   COMMERCIAL: [
+//     'English Language',
+//     'Mathematics',
+//     'Accounting',
+//     'Commerce',
+//     'Economics',
+//     'ICT',
+//     'CRS or IRS',
+//     'Civic Education',
+//     'Marketing'
+//   ]
+// };
 
 const DEPARTMENT_SUBJECTS = {
   SCIENCE: [
@@ -36,7 +94,8 @@ const DEPARTMENT_SUBJECTS = {
     'Further Math',
     'Agric',
     'ICT',
-    'Civic Education'
+    'Civic Education',
+    'Digital Technology'
   ],
   ART: [
     'English Language',
@@ -47,7 +106,8 @@ const DEPARTMENT_SUBJECTS = {
     'CRS or IRS',
     'History',
     'ICT',
-    'Civic Education'
+    'Civic Education',
+    'Digital Technology'
   ],
   COMMERCIAL: [
     'English Language',
@@ -58,7 +118,8 @@ const DEPARTMENT_SUBJECTS = {
     'ICT',
     'CRS or IRS',
     'Civic Education',
-    'Marketing'
+    'Marketing',
+    'Digital Technology'
   ]
 };
 
