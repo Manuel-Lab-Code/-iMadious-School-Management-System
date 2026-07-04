@@ -171,6 +171,27 @@ function normClass(c) {
   return String(c || '').toUpperCase().replace(/\s+/g, '').trim();
 }
 
+/* Strip answer keys and marking guides before sending an exam to a student.
+   Students must never receive the correct-answer index for objective
+   questions, or the teacher's marking guide for theory questions — both
+   are visible in the browser's Network tab otherwise. */
+function sanitizeExamForStudent(exam) {
+  const clean = { ...exam };
+  if (Array.isArray(clean.questions)) {
+    clean.questions = clean.questions.map(q => {
+      const { answer, ...rest } = q;
+      return rest;
+    });
+  }
+  if (Array.isArray(clean.theoryQuestions)) {
+    clean.theoryQuestions = clean.theoryQuestions.map(q => {
+      const { guide, ...rest } = q;
+      return rest;
+    });
+  }
+  return clean;
+}
+
 /* Apply auth then schoolTenant as separate calls — Express 5 safe */
 router.use(auth);
 router.use(schoolTenant);
