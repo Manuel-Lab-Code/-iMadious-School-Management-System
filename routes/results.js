@@ -262,9 +262,12 @@ router.post('/', async (req, res) => {
     }
 
     /* Verify student and exam both belong to this school */
+    /* Verify student belongs to this school; fetch the FULL exam doc
+       (not just _id) so we can grade it ourselves. Never trust a score
+       calculated in the student's browser. */
     const [studentDoc, examDoc] = await Promise.all([
       User.findOne({ _id: student, schoolId: req.schoolId }).select('_id'),
-      Exam.findOne({ _id: exam,    schoolId: req.schoolId }).select('_id'),
+      Exam.findOne({ _id: exam,    schoolId: req.schoolId }),
     ]);
     if (!studentDoc) return res.status(404).json({ message: 'Student not found in this school.' });
     if (!examDoc)    return res.status(404).json({ message: 'Exam not found in this school.'    });
@@ -274,7 +277,56 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'You have already submitted this exam.' });
     }
 
-    const result = new Result({ ...req.body, schoolId: req.schoolId });
+    /* ── Server-side grading — the only source of truth for scores ──
+       Expects raw answers: objAnswers = { questionIndex: selectedOptionIndex },
+       theoryAnswers = { questionIndex: freeTextAnswer }. Anything else the
+       client sends for scoring (objScore, percent, grade, etc.) is ignored. */
+    const objQs = examDoc.questions || [];
+    const rawObjAnswers = req.body.objAnswers || {};
+    let objScore = 0, objTotal = 0;
+    const objBreakdown = objQs.map((q, i) => {
+      const sa = rawObjAnswers[i];
+      const correct = sa !== undefined && Number(sa) === q.answer;
+      const earned = correct ? (q.marks || 1) : 0;
+      objScore += earned;
+      objTotal += (q.marks || 1);
+      return {
+        text: q.text,
+        correct,
+        studentAns: (sa !== undefined && q.options[sa] !== undefined) ? q.options[sa] : 'Not answered',
+        correctAns: q.options[q.answer],
+        marks: earned,
+        maxMarks: q.marks || 1,
+      };
+    });
+
+    const theoryQs = examDoc.theoryQuestions || [];
+    const rawTheoryAnswers = req.body.theoryAnswers || {};
+    const theoryTotal = theoryQs.reduce((s, q) => s + (q.marks || 0), 0);
+    const theoryAnswers = theoryQs.map((q, i) => ({
+      questionId: String(q._id || i),
+      questionText: q.text,
+      answer: rawTheoryAnswers[i] || '',
+      maxMarks: q.marks || 0,
+      marksAwarded: null,
+    }));
+
+    const grandTotal = objTotal + theoryTotal;
+    const percent = grandTotal > 0 ? Math.round((objScore / grandTotal) * 100) : 0;
+    const grade = percent >= 75 ? 'A' : percent >= 65 ? 'B' : percent >= 55 ? 'C' : percent >= 45 ? 'D' : 'F';
+
+    const result = new Result({
+      schoolId: req.schoolId,
+      student,
+      studentName: req.body.studentName,
+      exam,
+      examTitle: examDoc.title,
+      subject: examDoc.subject,
+      objScore, objTotal, objBreakdown,
+      theoryAnswers, theoryScore: null, theoryTotal,
+      totalScore: objScore, grandTotal, percent, grade,
+      status: 'submitted', released: false,
+    });
     await result.save();
     res.status(201).json(result);
   } catch (err) {
