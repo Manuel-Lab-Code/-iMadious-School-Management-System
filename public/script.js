@@ -614,31 +614,15 @@ function updateExamProgress(total) { if (!_currentExam || !total) return; var a 
 async function submitExam() {
   clearInterval(_examTimerInt);
   var session = Session.get(); if (!_currentExam || !session) return;
-  var objQs = _currentExam.questions || [], theoryQs = _currentExam.theoryQuestions || [];
-  var objScore = 0, objTotal = 0, objBreakdown = [];
-  objQs.forEach(function (q, i) {
-    var sa = _currentExam.objAnswers[i], correct = sa === q.answer, earned = correct ? (q.marks || 1) : 0;
-    objScore += earned; objTotal += (q.marks || 1);
-    objBreakdown.push({ text: q.text, correct: correct, studentAns: sa !== undefined ? q.options[sa] : 'Not answered', correctAns: q.options[q.answer], marks: earned, maxMarks: q.marks || 1 });
-  });
-  var theoryTotal = theoryQs.reduce(function (s, q) { return s + (q.marks || 0); }, 0);
-  var theoryAnswers = theoryQs.map(function (q, i) {
-    return { questionId: sid(q._id) || String(i), questionText: q.text, answer: _currentExam.theoryAnswers[i] || '', guide: q.guide || '', maxMarks: q.marks || 0, marksAwarded: null };
-  });
-  var grandTotal = objTotal + theoryTotal;
-  var percent = grandTotal > 0 ? Math.round((objScore / grandTotal) * 100) : 0;
-  var grade = calcGrade(percent);
   try {
-    await Api.post('/results', {
+    var result = await Api.post('/results', {
       student: session.id, studentName: session.name, exam: _currentExam._id,
-      examTitle: _currentExam.title, subject: _currentExam.subject,
-      objScore, objTotal, objBreakdown, theoryAnswers,
-      theoryScore: null, theoryTotal, totalScore: objScore, grandTotal, percent, grade,
+      objAnswers: _currentExam.objAnswers, theoryAnswers: _currentExam.theoryAnswers,
       status: 'submitted', released: false
     });
-    await addNotification(session.id, 'You completed "' + _currentExam.title + '" — Obj Score: ' + objScore + '/' + objTotal);
+    await addNotification(session.id, 'You completed "' + _currentExam.title + '" — Obj Score: ' + result.objScore + '/' + result.objTotal);
     $('examModal').classList.add('hidden');
-    showResultModal(objScore, objTotal, theoryTotal, percent, grade, objBreakdown);
+    showResultModal(result.objScore, result.objTotal, result.theoryTotal, result.percent, result.grade, result.objBreakdown);
     renderNotifications(session.id);
     _currentExam = null;
   } catch (err) { showToast('Error saving result: ' + err.message, 'error'); }
