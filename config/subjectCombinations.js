@@ -93,7 +93,7 @@ const DEPARTMENT_SUBJECTS = {
     'Physics',
     'Further Math',
     'Agric',
-    'ICT',
+    'ICT/Coding',
     'Civic Education',
     'Digital Technology'
   ],
@@ -105,7 +105,7 @@ const DEPARTMENT_SUBJECTS = {
     'Economics',
     'CRS or IRS',
     'History',
-    'ICT',
+    'ICT/Coding',
     'Civic Education',
     'Digital Technology'
   ],
@@ -115,7 +115,7 @@ const DEPARTMENT_SUBJECTS = {
     'Accounting',
     'Commerce',
     'Economics',
-    'ICT',
+    'ICT/Coding',
     'CRS or IRS',
     'Civic Education',
     'Marketing',
