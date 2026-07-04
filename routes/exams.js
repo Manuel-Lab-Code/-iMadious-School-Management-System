@@ -229,9 +229,9 @@ router.get('/', async (req, res) => {
       /* If we genuinely can't determine the class, don't silently hide
          everything — return all approved exams for the school rather than
          locking the student out of their dashboard. */
-      if (!myClass) {
+   if (!myClass) {
         console.log(`[GET /exams student] class could not be determined, returning all ${approved.length} approved exams as fallback`);
-        return res.json(approved);
+        return res.json(approved.map(sanitizeExamForStudent));
       }
 
       const visible = approved.filter(e => {
