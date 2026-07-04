@@ -285,9 +285,31 @@
             <h4>📋 Section A — Objective Questions (Multiple Choice)</h4>
             <p>Each question has 4 options. Select the correct answer and assign marks.</p>
           </div>
-          <button class="btn-primary btn-sm" onclick="addObjectiveQuestion()">
-            + Add Objective Question
-          </button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary btn-sm" onclick="ecToggleObjPaste()">
+              📋 Paste Questions
+            </button>
+            <button class="btn-primary btn-sm" onclick="addObjectiveQuestion()">
+              + Add Objective Question
+            </button>
+          </div>
+        </div>
+        <div class="hidden" id="objPasteBox" style="padding:16px; border:1px dashed #ccc; border-radius:8px; margin-bottom:16px;">
+          <p style="margin:0 0 10px 0; font-size:13px; color:#555;">
+            Paste questions in this format (one block per question — blank line between questions works best):<br>
+            <code style="display:block; white-space:pre-line; background:#f5f5f5; padding:8px; border-radius:6px; margin-top:6px;">1. What is the capital of Nigeria?
+            A. Lagos
+            B. Abuja
+            C. Kano
+            D. Enugu
+            Answer: B
+            </code>
+          </p>
+          <textarea id="objPasteArea" rows="10" style="width:100%; font-family:monospace; font-size:13px; margin-bottom:10px;" placeholder="Paste your objective questions here..."></textarea>
+          <div>
+            <button class="btn-primary btn-sm" onclick="ecParsePastedObjective()">Parse &amp; Insert</button>
+            <button class="btn-secondary btn-sm" onclick="ecToggleObjPaste()">Cancel</button>
+          </div>
         </div>
         <div id="objectiveList" class="questions-container"></div>
         <div class="ce-panel-empty hidden" id="objEmpty">
