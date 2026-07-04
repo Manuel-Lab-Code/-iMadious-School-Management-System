@@ -192,6 +192,12 @@ function ecParsePastedObjective() {
   });
   if (current.length) blocks.push(current);
 
+  // Drop blocks that are entirely blank lines (e.g. leading whitespace
+  // before the first question) — these aren't real failed questions.
+  blocks = blocks.filter(function (blockLines) {
+    return blockLines.some(function (l) { return l.trim() !== ''; });
+  });
+
   var parsed = [], failed = 0;
   blocks.forEach(function (blockLines) {
     var text = '', options = [], answerIdx = -1;
