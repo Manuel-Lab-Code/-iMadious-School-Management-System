@@ -156,13 +156,89 @@ function addObjectiveQuestion() {
   ecUpdateSummary(); ecUpdateCounts(); scheduleAutosave();
   setTimeout(function(){ var el=document.getElementById('qblock_'+q.id); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },60);
 }
-function addTheoryQuestion() {
+
+/* ══════════════════════════════════════════════════════════
+   PASTE & PARSE OBJECTIVE QUESTIONS
+   Expects blocks like:
+     1. Question text?
+     A. Option one
+     B. Option two
+     C. Option three
+     D. Option four
+     Answer: B
+   Tolerant of "1)", "Q1.", lowercase letters, "A)", "Ans:",
+   "Correct Answer:", and a numeric answer (e.g. "Answer: 2").
+   ══════════════════════════════════════════════════════════ */
+function ecToggleObjPaste() {
+  var box = document.getElementById('objPasteBox');
+  if (box) box.classList.toggle('hidden');
+}
+
+function ecParsePastedObjective() {
+  var area = document.getElementById('objPasteArea');
+  var raw = area ? area.value : '';
+  if (!raw || !raw.trim()) { ecToast('Paste some questions first.', 'error'); return; }
+
+  var qStart = /^\s*(?:Q(?:uestion)?\s*)?\d+[\.\)]\s*/i;
+  var optLine = /^\s*\(?([A-Da-d])\)?[\.\):]\s*(.+)$/;
+  var ansLine = /^\s*(?:correct\s*)?ans(?:wer)?\s*[:\-]?\s*\(?([A-Da-d0-9])\)?/i;
+  var letterIndex = { A:0, B:1, C:2, D:3 };
+
+  var lines = raw.replace(/\r\n/g, '\n').split('\n');
+  var blocks = [], current = [];
+  lines.forEach(function (line) {
+    if (qStart.test(line) && current.length) { blocks.push(current); current = [line]; }
+    else { current.push(line); }
+  });
+  if (current.length) blocks.push(current);
+
+  var parsed = [], failed = 0;
+  blocks.forEach(function (blockLines) {
+    var text = '', options = [], answerIdx = -1;
+    blockLines.forEach(function (line) {
+      var trimmed = line.trim();
+      if (!trimmed) return;
+      var ansMatch = trimmed.match(ansLine);
+      if (ansMatch) {
+        var val = ansMatch[1].toUpperCase();
+        answerIdx = letterIndex.hasOwnProperty(val) ? letterIndex[val] : (parseInt(val, 10) - 1);
+        return;
+      }
+      var optMatch = trimmed.match(optLine);
+      if (optMatch) { options.push(optMatch[2].trim()); return; }
+      text += (text ? ' ' : '') + trimmed.replace(qStart, '');
+    });
+
+    if (!text || options.length < 2 || answerIdx < 0 || answerIdx > options.length - 1) {
+      failed++; return;
+    }
+    while (options.length < 4) options.push('');
+    options = options.slice(0, 4);
+
+    var q = ecNewObj();
+    q.text = text; q.options = options; q.answer = answerIdx;
+    parsed.push(q);
+  });
+
+  if (parsed.length === 0) {
+    ecToast('Could not parse any questions — check the format shown above and try again.', 'error');
+    return;
+  }
+
   ecCollectDOM();
-  var q = ecNewTheory();
-  EC.theoryQuestions.push(q);
-  ecRenderAllTheory();
+  EC.objQuestions = EC.objQuestions.filter(function (q) {
+    return q.text.trim() !== '' || q.options.some(function (o) { return o.trim() !== ''; });
+  });
+  EC.objQuestions = EC.objQuestions.concat(parsed);
+
+  ecRenderAllObj();
   ecUpdateSummary(); ecUpdateCounts(); scheduleAutosave();
-  setTimeout(function(){ var el=document.getElementById('qblock_'+q.id); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },60);
+  area.value = '';
+  ecToggleObjPaste();
+
+  var msg = 'Added ' + parsed.length + ' question(s) from paste.';
+  if (failed) msg += ' ' + failed + ' block(s) couldn\'t be parsed — check formatting and add those manually.';
+  ecToast(msg, failed ? 'info' : 'success');
 }
 
 /* ══════════════════════════════════════════════════════════
