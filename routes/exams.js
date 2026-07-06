@@ -217,9 +217,13 @@ router.get('/', async (req, res) => {
         console.log(`[GET /exams student] fallback DB class: "${student && student.class}", normalized: "${myClass}"`);
       }
 
-      const approved = await Exam.find({ ...base, status: 'approved' })
+      const approvedRaw = await Exam.find({ ...base, status: 'approved' })
         .sort({ createdAt: -1 })
         .lean();
+
+      /* Hide exams past their deadline; exams with no expiresAt are always visible. */
+      const now = new Date();
+      const approved = approvedRaw.filter(e => !e.expiresAt || new Date(e.expiresAt) > now);
 
       console.log(`[GET /exams student] found ${approved.length} approved exams for school ${req.schoolId}`);
       approved.forEach((e, i) => {
