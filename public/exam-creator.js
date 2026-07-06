@@ -70,6 +70,7 @@ function ecSaveDraft() {
     duration: ecGetVal('examDuration'),
     session : ecGetVal('examSession'),
     term    : ecGetVal('examTerm'),
+    expiry  : ecGetVal('examExpiry'),
     objQuestions   : EC.objQuestions,
     theoryQuestions: EC.theoryQuestions,
     savedAt : new Date().toISOString()
@@ -93,6 +94,7 @@ function ecLoadDraft() {
     ecSetVal('examDuration', d.duration || '');
     ecSetVal('examSession',  d.session  || '');
     ecSetVal('examTerm',     d.term     || '');
+    ecSetVal('examExpiry',   d.expiry   || '');
     EC.objQuestions    = (d.objQuestions    || []).map(function(q){ return Object.assign(ecNewObj(),    q); });
     EC.theoryQuestions = (d.theoryQuestions || []).map(function(q){ return Object.assign(ecNewTheory(), q); });
     if (d.savedAt) ecSetStatus('saved', d.savedAt);
@@ -482,6 +484,8 @@ async function submitExamToAdmin(){
   var duration = parseInt(ecGetVal('examDuration'));
   var session  = ecGetVal('examSession');
   var term     = ecGetVal('examTerm');
+  var expiryRaw= ecGetVal('examExpiry');
+  var expiresAt= expiryRaw ? new Date(expiryRaw).toISOString() : null;
   var errEl    = document.getElementById('examCreateError');
   if(errEl){errEl.textContent='';errEl.style.display='none';}
 
@@ -489,6 +493,8 @@ async function submitExamToAdmin(){
   if(!subject)                  return ecShowErr(errEl,'Please select a subject.');
   if(!cls)                      return ecShowErr(errEl,'Please select a target class.');
   if(!duration||duration<5)     return ecShowErr(errEl,'Please set a valid duration (min 5 minutes).');
+  if(expiresAt && new Date(expiresAt) <= new Date())
+                                 return ecShowErr(errEl,'Deadline must be in the future.');
   if(EC.objQuestions.length===0&&EC.theoryQuestions.length===0)
                                 return ecShowErr(errEl,'Please add at least one question.');
 
@@ -540,7 +546,7 @@ async function submitExamToAdmin(){
   var submitPayload = {
     schoolId:schoolId,
     title:title, subject:subject, targetClass:cls, duration:duration,
-    session:session, term:term, totalMarks:oT+tT, objMarks:oT, theoryMarks:tT,
+    session:session, term:term, expiresAt:expiresAt, totalMarks:oT+tT, objMarks:oT, theoryMarks:tT,
     questions:EC.objQuestions.map(function(q){return{type:'objective',text:q.text,options:q.options,answer:q.answer,marks:q.marks};}),
     theoryQuestions:EC.theoryQuestions.map(function(q){return{type:'theory',text:q.text,guide:q.guide,marks:q.marks};}),
     createdBy:tUser, createdByName:tName, status:'pending'
@@ -558,7 +564,7 @@ async function submitExamToAdmin(){
   ecToast('✅ Exam submitted to Admin for approval!','success');
   localStorage.removeItem(EC.DRAFT_KEY);
   EC.objQuestions=[ecNewObj()]; EC.theoryQuestions=[ecNewTheory()];
-  ['examTitle','examSubject','examClass','examDuration','examSession','examTerm'].forEach(function(id){ecSetVal(id,'');});
+  ['examTitle','examSubject','examClass','examDuration','examSession','examTerm','examExpiry'].forEach(function(id){ecSetVal(id,'');});
   ecRenderAll(); ecUpdateSummary(); ecUpdateCounts(); ecSetStatus('saved');
   if(typeof showSection==='function') showSection('my-exams');
 }
@@ -771,9 +777,3 @@ function aiInsertSelected(){
   aiCloseModal();
   ecToast('✨ Inserted '+addedObj+' objective and '+addedTheory+' theory question(s).','success');
 }
-
-
-
-
-
-
