@@ -392,8 +392,10 @@ router.post('/verify-otp',
    ═══════════════════════════════════════════════════════════ */
 router.post('/resend-otp', otpInitiateLimiter, async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+    const validator = require('validator');
+    const rawEmail = req.body.email;
+    if (!rawEmail) return res.status(400).json({ success: false, message: 'Email is required.' });
+    const email = validator.normalizeEmail(rawEmail);
     const record = await OTP.findOne({ email });
     if (!record) return res.status(400).json({ success: false, message: 'No pending registration found. Please register again.' });
 
