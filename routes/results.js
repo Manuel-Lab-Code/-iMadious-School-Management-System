@@ -277,6 +277,11 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'You have already submitted this exam.' });
     }
 
+    /* Deadline check — never trust the student's browser clock. */
+    if (examDoc.expiresAt && new Date(examDoc.expiresAt) < new Date()) {
+      return res.status(400).json({ message: 'This exam\'s deadline has passed. Submission is no longer accepted.' });
+    }
+
     /* ── Server-side grading — the only source of truth for scores ──
        Expects raw answers: objAnswers = { questionIndex: selectedOptionIndex },
        theoryAnswers = { questionIndex: freeTextAnswer }. Anything else the
