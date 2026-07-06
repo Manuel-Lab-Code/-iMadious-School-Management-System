@@ -132,7 +132,8 @@ const validators = {
     registerVerifyOTP: [
         body('email')
             .isEmail()
-            .withMessage('Invalid email'),
+            .withMessage('Invalid email')
+            .normalizeEmail(),
         body('otp')
             .trim()
             .isLength({ min: 6, max: 6 })
