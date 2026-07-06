@@ -42,6 +42,7 @@ const ExamSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
+  expiresAt: { type: Date, default: null }, // optional deadline; null = no deadline
 }, { timestamps: true });
 
 module.exports = mongoose.model('Exam', ExamSchema);
