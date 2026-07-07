@@ -158,6 +158,14 @@ function addObjectiveQuestion() {
   ecUpdateSummary(); ecUpdateCounts(); scheduleAutosave();
   setTimeout(function(){ var el=document.getElementById('qblock_'+q.id); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },60);
 }
+function addTheoryQuestion() {
+  ecCollectDOM();
+  var q = ecNewTheory();
+  EC.theoryQuestions.push(q);
+  ecRenderAllTheory();
+  ecUpdateSummary(); ecUpdateCounts(); scheduleAutosave();
+  setTimeout(function(){ var el=document.getElementById('qblock_'+q.id); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },60);
+}
 
 /* ══════════════════════════════════════════════════════════
    PASTE & PARSE OBJECTIVE QUESTIONS
