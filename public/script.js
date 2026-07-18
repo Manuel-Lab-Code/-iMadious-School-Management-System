@@ -1479,10 +1479,10 @@ async function renderTeacherMarking(s) {
     if (pending.length === 0) { list.innerHTML = emptyHTML('✔️', 'No submissions pending. All done!'); return; }
     list.innerHTML = pending.map(function (r) {
       var hasT = (r.theoryAnswers || []).length > 0;
-      return '<div class="marking-card"><div class="marking-card-header"><div>'
+      return '<div class="marking-card"><div class="marking-card-header"><div class="marking-card-info">'
         + '<div class="marking-card-title">' + (r.studentName || '') + ' — ' + (r.examTitle || '') + '</div>'
-        + '<div style="font-size:.8rem;color:var(--text-2)">Obj: ' + r.objScore + '/' + r.objTotal + (hasT ? ' · Theory requires marking (' + r.theoryTotal + ' marks available)' : '') + '</div>'
-        + '</div><div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<div class="marking-card-sub">Obj: ' + r.objScore + '/' + r.objTotal + (hasT ? ' · Theory requires marking (' + r.theoryTotal + ' marks available)' : '') + '</div>'
+        + '</div><div class="marking-card-actions">'
         + (hasT ? '<button class="btn-primary btn-sm" onclick="openTheoryMarking(\'' + r._id + '\')">✍️ Mark Theory</button>' : '')
         + '<button class="btn-success btn-sm" onclick="submitResultToAdmin(\'' + r._id + '\')">📤 Submit to Admin</button>'
         + '</div></div>'
@@ -1497,7 +1497,7 @@ async function openTheoryMarking(resultId) {
     var results = await Api.get('/results');
     var r = results.find(function (x) { return String(x._id) === String(resultId); });
     if (!r) return;
-    var html = '<div style="padding:20px">'
+    var html = '<div class="theory-marking">'
       + '<h4 style="font-family:var(--font-display);margin-bottom:4px">Mark Theory Answers</h4>'
       + '<p style="font-size:.83rem;color:var(--text-2);margin-bottom:16px">Student: <strong>' + (r.studentName || '') + '</strong> — Award marks for each answer. Marks are added immediately to their total.</p>';
     (r.theoryAnswers || []).forEach(function (a, i) {

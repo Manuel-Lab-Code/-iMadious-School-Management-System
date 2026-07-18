@@ -3304,6 +3304,155 @@ table {
 }
 
 
+/* ═══════════════════════════════════════════════════════════
+   MARK EXAM — Teacher marking list + Theory-marking modal
+   Responsive hardening (mobile → ultrawide). Additive only:
+   preserves the existing desktop layout, restyles nothing that
+   other pages depend on.
+   ═══════════════════════════════════════════════════════════ */
 
+/* ── Marking list cards ─────────────────────────────────────
+   The card header previously used a rigid space-between flex
+   with no wrapping, so on narrow screens the title and the
+   action buttons fought over the same row. Make the header a
+   wrapping flex row: the info block grows and may shrink to 0
+   (min-width:0 lets long names wrap instead of overflowing),
+   while the actions block sits beside it on wide screens and
+   drops onto its own row on small ones.                        */
+.marking-card-header {
+  align-items: flex-start;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.marking-card-info {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.marking-card-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.marking-card-sub {
+  font-size: .8rem;
+  color: var(--text-2);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.marking-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+/* Below the small-tablet breakpoint the actions take the full
+   width and the buttons share the row as equal, comfortably
+   tappable targets (>=44px height via .btn-sm padding).        */
+@media (max-width: 560px) {
+  .marking-card {
+    padding: 16px;
+  }
+
+  .marking-card-info {
+    flex-basis: 100%;
+  }
+
+  .marking-card-actions {
+    width: 100%;
+  }
+
+  .marking-card-actions .btn-sm {
+    flex: 1 1 auto;
+    min-height: 42px;
+  }
+}
+
+/* ── Theory-marking modal body ──────────────────────────────
+   Replaces the old inline `padding:20px;max-height:60vh;
+   overflow-y:auto`. A single scroll container (the body) keeps
+   the modal header + footer pinned; `.modal:has()` disables the
+   outer scroll so we never get nested scrollbars. Height is
+   derived from the modal's own 90vh cap minus the chrome, so it
+   adapts to short/landscape screens instead of a fixed 60vh.    */
+.theory-body {
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: min(62vh, calc(90vh - 132px));
+}
+
+.modal:has(.theory-body) {
+  overflow: hidden;
+}
+
+/* Inner wrapper emitted by openTheoryMarking(). Padding now lives
+   on .theory-body only, removing the previous double padding.    */
+.theory-marking {
+  padding: 0;
+}
+
+.theory-marking > h4 {
+  font-size: 1.02rem;
+}
+
+/* Student answer box: preserve line breaks but force long
+   unbroken tokens (URLs, run-on text) to wrap instead of
+   overflowing horizontally.                                      */
+.theory-marking .preview-q-block [style*="pre-wrap"] {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Marks input: clearer, accessible focus ring consistent with
+   the brand token.                                               */
+.marks-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Small-screen refinements for the modal ─────────────────── */
+@media (max-width: 480px) {
+  .theory-body {
+    padding: 14px;
+    max-height: min(70vh, calc(92vh - 118px));
+  }
+
+  .preview-q-block {
+    padding: 12px;
+  }
+
+  /* Let the meta row wrap so the marks tag never collides with
+     a long question number label.                                */
+  .preview-q-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Stack the marks entry so the number field and its "out of N"
+     note stay readable on the narrowest phones.                  */
+  .marks-row {
+    align-items: stretch;
+  }
+
+  .marks-input {
+    width: 100% !important;
+    max-width: 140px;
+  }
+
+  /* Full-width, stacked footer actions = larger tap targets.     */
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
 
 
