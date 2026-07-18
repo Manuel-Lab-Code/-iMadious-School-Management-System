@@ -491,11 +491,11 @@
   </main>
 
   <!-- ── EXAM PREVIEW & THEORY MARKING MODAL ─────────────────── -->
-  <div class="modal-overlay hidden" id="examPreviewOverlay" onclick="closeExamPreview()">
-    <div class="modal modal-lg" onclick="event.stopPropagation()">
+  <div class="modal-overlay hidden theory-fullscreen" id="examPreviewOverlay" onclick="closeExamPreview()">
+    <div class="modal modal-lg theory-modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3>✍️ Theory Marking</h3>
-        <button onclick="closeExamPreview()">✕</button>
+        <button onclick="closeExamPreview()" aria-label="Close">✕</button>
       </div>
       <div id="examPreviewContent" class="theory-body"></div>
       <div class="modal-footer" id="examPreviewActions"></div>

@@ -3455,4 +3455,75 @@ table {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MARK EXAM — Theory Marking: FULL SCREEN mode
+   Upgrades the centered modal to a full-viewport working
+   surface on EVERY device, mobile through ultrawide, instead
+   of a small card floating over a dimmed backdrop. Selectors
+   are scoped to .theory-fullscreen / .theory-modal only, so
+   the admin exam-preview modal and the draft-preview modal
+   (which reuse .modal / .modal-lg elsewhere) are untouched.
+   These rules are intentionally appended last so they win the
+   cascade against the earlier .modal / .modal-lg sizing rules
+   without needing !important anywhere.
+   ═══════════════════════════════════════════════════════════ */
 
+.modal-overlay.theory-fullscreen {
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.theory-modal {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  /* dvh wins in browsers that support it (handles mobile browser
+     chrome correctly); vh above is the fallback. */
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.theory-modal .modal-header {
+  flex-shrink: 0;
+  padding-top: max(18px, env(safe-area-inset-top));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+
+/* The scroll surface: everything between the pinned header and
+   pinned footer. flex:1 + min-height:0 is what lets a flex child
+   scroll instead of stretching the whole column past the screen. */
+.theory-modal .theory-body {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 28px 24px;
+}
+
+/* Reading column: the canvas fills the full screen edge-to-edge,
+   but question/answer text stays a comfortable line length on
+   large and ultrawide monitors instead of stretching absurdly. */
+.theory-modal .theory-marking {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.theory-modal .modal-footer {
+  flex-shrink: 0;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+
+@media (max-width: 480px) {
+  .theory-modal .theory-body {
+    padding: 18px 16px;
+  }
+}
