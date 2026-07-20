@@ -1469,19 +1469,89 @@ async function renderTeacherSubmissions(s) {
 }
 
 /* THEORY MARKING */
+/* Canonical class order for sorting the filter tabs (falls back to
+   alphabetical for anything outside this list, so unexpected class
+   labels never disappear — they just sort last). */
+var MARKING_CLASS_ORDER = ['JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'];
+function sortMarkingClasses(classes) {
+  return classes.slice().sort(function (a, b) {
+    var ia = MARKING_CLASS_ORDER.indexOf(a), ib = MARKING_CLASS_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+
+/* Persisted across re-renders so marking one student doesn't kick
+   the teacher back out to "All Classes" mid-way through a class. */
+var teacherMarkingClassFilter = 'all';
+var teacherMarkingPendingCache = [];
+
 async function renderTeacherMarking(s) {
   var list = $('markingList'); if (!list) return;
+  var tabsEl = $('markingClassTabs');
+  var summaryEl = $('markingClassSummary');
   list.innerHTML = loadingHTML('Loading…');
+  if (tabsEl) tabsEl.innerHTML = '';
+  if (summaryEl) summaryEl.innerHTML = '';
   try {
     var exams = await Api.get('/exams'), results = await Api.get('/results');
     var myIds = exams.filter(function (e) { return e.createdByName === s.name || e.createdBy === s.username; }).map(function (e) { return String(e._id); });
     var pending = results.filter(function (r) { return myIds.includes(sid(r.exam)) && r.status === 'submitted'; });
-    if (pending.length === 0) { list.innerHTML = emptyHTML('✔️', 'No submissions pending. All done!'); return; }
-    list.innerHTML = pending.map(function (r) {
+    /* Exam is already populated with targetClass by GET /results,
+       so grouping needs no extra request. */
+    pending.forEach(function (r) { r.className = (r.exam && r.exam.targetClass) || 'Unspecified'; });
+    teacherMarkingPendingCache = pending;
+
+    if (pending.length === 0) {
+      teacherMarkingClassFilter = 'all';
+      list.innerHTML = emptyHTML('✔️', 'No submissions pending. All done!');
+      return;
+    }
+
+    var counts = {};
+    pending.forEach(function (r) { counts[r.className] = (counts[r.className] || 0) + 1; });
+    var classes = sortMarkingClasses(Object.keys(counts));
+
+    /* If the class the teacher was working in has nothing left
+       pending (they just finished it), fall back to "All Classes"
+       instead of showing a confusing empty screen. */
+    if (teacherMarkingClassFilter !== 'all' && !counts[teacherMarkingClassFilter]) {
+      teacherMarkingClassFilter = 'all';
+    }
+
+    if (tabsEl) {
+      tabsEl.innerHTML = '<button class="tab-btn' + (teacherMarkingClassFilter === 'all' ? ' active' : '') + '" onclick="setMarkingClassFilter(\'all\')">📋 All Classes (' + pending.length + ')</button>'
+        + classes.map(function (c) {
+          return '<button class="tab-btn' + (teacherMarkingClassFilter === c ? ' active' : '') + '" onclick="setMarkingClassFilter(\'' + c.replace(/'/g, "\\'") + '\')">🏫 ' + c + ' (' + counts[c] + ')</button>';
+        }).join('');
+    }
+
+    var visible = teacherMarkingClassFilter === 'all' ? pending : pending.filter(function (r) { return r.className === teacherMarkingClassFilter; });
+    var needsTheoryCount = visible.filter(function (r) {
+      var hasT = (r.theoryAnswers || []).length > 0;
+      return hasT && (r.theoryScore === null || r.theoryScore === undefined);
+    }).length;
+
+    if (summaryEl) {
+      var label = teacherMarkingClassFilter === 'all' ? 'all classes' : teacherMarkingClassFilter;
+      summaryEl.innerHTML = '<div class="marking-class-summary">'
+        + '<div class="marking-class-summary-text">'
+        + '<strong>' + visible.length + '</strong> submission' + (visible.length === 1 ? '' : 's') + ' in <strong>' + label + '</strong>'
+        + (needsTheoryCount > 0
+          ? ' · <span class="marking-summary-warning">' + needsTheoryCount + ' need' + (needsTheoryCount === 1 ? 's' : '') + ' theory marking</span>'
+          : ' · all theory marked')
+        + '</div>'
+        + '<button class="btn-success btn-sm" onclick="bulkSubmitClassToAdmin(\'' + teacherMarkingClassFilter.replace(/'/g, "\\'") + '\', this)">📤 Submit All (' + visible.length + ') to Admin</button>'
+        + '</div>';
+    }
+
+    list.innerHTML = visible.map(function (r) {
       var hasT = (r.theoryAnswers || []).length > 0;
       return '<div class="marking-card"><div class="marking-card-header"><div class="marking-card-info">'
         + '<div class="marking-card-title">' + (r.studentName || '') + ' — ' + (r.examTitle || '') + '</div>'
-        + '<div class="marking-card-sub">Obj: ' + r.objScore + '/' + r.objTotal + (hasT ? ' · Theory requires marking (' + r.theoryTotal + ' marks available)' : '') + '</div>'
+        + '<div class="marking-card-sub">' + r.className + ' · Obj: ' + r.objScore + '/' + r.objTotal + (hasT ? ' · Theory requires marking (' + r.theoryTotal + ' marks available)' : '') + '</div>'
         + '</div><div class="marking-card-actions">'
         + (hasT ? '<button class="btn-primary btn-sm" onclick="openTheoryMarking(\'' + r._id + '\')">✍️ Mark Theory</button>' : '')
         + '<button class="btn-success btn-sm" onclick="submitResultToAdmin(\'' + r._id + '\')">📤 Submit to Admin</button>'
@@ -1490,6 +1560,11 @@ async function renderTeacherMarking(s) {
         + '</div>';
     }).join('');
   } catch (err) { list.innerHTML = emptyHTML('⚠️', err.message); }
+}
+
+function setMarkingClassFilter(cls) {
+  teacherMarkingClassFilter = cls;
+  renderTeacherMarking(Session.get());
 }
 
 async function openTheoryMarking(resultId) {
@@ -1540,13 +1615,57 @@ async function saveTheoryMarks(resultId, count, grandTotal, objScore) {
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 
+/* Shared by the single-card button and the bulk class action below —
+   just the status flip, no toast/notification/re-render side effects. */
+async function markResultSubmittedToAdmin(resultId) {
+  return Api.put('/results/' + resultId, { status: 'marked' });
+}
+
 async function submitResultToAdmin(resultId) {
   try {
-    await Api.put('/results/' + resultId, { status: 'marked' });
+    await markResultSubmittedToAdmin(resultId);
     await addNotification('admin', 'New exam result submitted by teacher and ready for release.');
     showToast('Result submitted to Admin!', 'success');
     renderTeacherMarking(Session.get());
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function bulkSubmitClassToAdmin(cls, btn) {
+  var items = cls === 'all'
+    ? teacherMarkingPendingCache.slice()
+    : teacherMarkingPendingCache.filter(function (r) { return r.className === cls; });
+  if (items.length === 0) return;
+
+  var needsTheory = items.filter(function (r) {
+    var hasT = (r.theoryAnswers || []).length > 0;
+    return hasT && (r.theoryScore === null || r.theoryScore === undefined);
+  });
+  var label = cls === 'all' ? 'all classes' : cls;
+  var msg = needsTheory.length > 0
+    ? needsTheory.length + ' of ' + items.length + ' submission' + (items.length === 1 ? '' : 's') + ' in ' + label + ' still need' + (needsTheory.length === 1 ? 's' : '') + ' theory marked. Their theory score will count as 0 unless marked first.\n\nSubmit all ' + items.length + ' to Admin anyway?'
+    : 'Submit all ' + items.length + ' result' + (items.length === 1 ? '' : 's') + ' in ' + label + ' to Admin?';
+  if (!confirm(msg)) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  /* Sequential, not Promise.all — this hits a free-tier host with
+     limited CPU/RAM, and each PUT can trigger a SubjectResult
+     recalc, so we deliberately avoid a concurrent burst. */
+  var ok = 0, failed = 0;
+  for (var i = 0; i < items.length; i++) {
+    try { await markResultSubmittedToAdmin(items[i]._id); ok++; }
+    catch (err) { failed++; }
+  }
+
+  if (ok > 0) {
+    var classPart = cls === 'all' ? '' : (' for ' + cls);
+    await addNotification('admin', ok + ' exam result' + (ok === 1 ? '' : 's') + classPart + ' submitted by teacher and ready for release.');
+  }
+  showToast(
+    ok + ' submitted to Admin' + (failed ? ', ' + failed + ' failed — please retry those individually.' : '.'),
+    failed ? 'error' : 'success'
+  );
+  renderTeacherMarking(Session.get());
 }
 
 function renderTeacherProfile(s) {
