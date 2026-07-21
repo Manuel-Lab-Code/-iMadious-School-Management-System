@@ -153,7 +153,7 @@
       <!-- TOP BAR: title + autosave status -->
       <div class="ce-topbar">
         <div>
-          <h2>➕ Create New Examination</h2>
+          <h2 id="ceTopbarTitle">➕ Create New Examination</h2>
           <p>Your work is saved automatically — you can safely close and continue later.</p>
         </div>
         <div class="ce-topbar-right">
@@ -161,11 +161,13 @@
             <span class="autosave-dot" id="autosaveDot"></span>
             <span id="autosaveText">All changes saved</span>
           </div>
-          <!-- <button class="btn-danger btn-sm" onclick="clearExamForm()">🗑 Clear Draft</button> -->
           <button class="btn-ai-generate btn-sm" onclick="aiOpenModal()">✨ Generate with AI</button>
-          <button class="btn-danger btn-sm" onclick="clearExamForm()">🗑 Clear Draft</button>
+          <button class="btn-secondary btn-sm hidden" id="ceCancelEditBtn" onclick="ecCancelEdit()">↩ Cancel Edit</button>
+          <button class="btn-danger btn-sm" id="ceClearDraftBtn" onclick="clearExamForm()">🗑 Clear Draft</button>
         </div>
       </div>
+
+      <div class="hidden" id="ceRejectionBanner" style="margin-bottom:16px;padding:12px 14px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:.85rem;font-weight:600;line-height:1.5;"></div>
 
       <!-- EXAM META CARD -->
       <div class="card ce-meta-card">
@@ -352,7 +354,7 @@
         </div>
         <div class="ce-submit-actions">
           <button class="btn-secondary" onclick="previewExamDraft()">👁 Preview Draft</button>
-          <button class="btn-primary" onclick="submitExamToAdmin()">
+          <button class="btn-primary" id="ceSubmitBtn" onclick="submitExamToAdmin()">
             Submit to Admin for Approval 📤
           </button>
         </div>
@@ -370,7 +372,7 @@
         <div id="draftPreviewContent" style="padding:20px;max-height:65vh;overflow-y:auto"></div>
         <div class="modal-footer">
           <button class="btn-secondary" onclick="closeDraftPreview()">Close</button>
-          <button class="btn-primary" onclick="closeDraftPreview();submitExamToAdmin()">
+          <button class="btn-primary" id="ceSubmitBtnModal" onclick="closeDraftPreview();submitExamToAdmin()">
             Submit to Admin 📤
           </button>
         </div>
