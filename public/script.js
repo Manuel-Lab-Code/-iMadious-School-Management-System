@@ -938,7 +938,56 @@ async function renderAdminOverview() {
           + '<span class="badge badge-active">Active</span></div>';
       }).join('');
     }
+    renderAdminTopStudents();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* TOP STUDENT BY SUBJECT & CLASS — cumulative (objective + theory +
+   test) result per SubjectResult, grouped by class+subject, keeping
+   whichever student has the highest totalScore in each group. A
+   session+term must be picked first: SubjectResult rows for different
+   terms aren't comparable, so mixing them would produce a misleading
+   "top" score. Reuses the existing GET /subject-results endpoint —
+   no backend changes needed. */
+async function renderAdminTopStudents() {
+  var sessionEl = $('topStudentsSession'), termEl = $('topStudentsTerm');
+  var container = $('topStudentsList'); if (!container) return;
+  var session = sessionEl ? sessionEl.value : '';
+  var term = termEl ? termEl.value : '';
+
+  if (!session || !term) {
+    container.innerHTML = emptyHTML('🏆', 'Select a session and term above to see the top student in each subject and class.');
+    return;
+  }
+  container.innerHTML = loadingHTML('Calculating top students…');
+  try {
+    var results = await Api.get('/subject-results?session=' + encodeURIComponent(session) + '&term=' + encodeURIComponent(term));
+    if (!results.length) {
+      container.innerHTML = emptyHTML('📭', 'No compound results yet for ' + term + ', ' + session + '.');
+      return;
+    }
+
+    var top = {};
+    results.forEach(function (r) {
+      var key = (r.class || 'Unspecified') + '|' + r.subject;
+      if (!top[key] || r.totalScore > top[key].totalScore) top[key] = r;
+    });
+    var rows = Object.keys(top).map(function (k) { return top[k]; }).sort(function (a, b) {
+      var cls = (a.class || '').localeCompare(b.class || '');
+      return cls !== 0 ? cls : (a.subject || '').localeCompare(b.subject || '');
+    });
+
+    container.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+      + '<th>Class</th><th>Subject</th><th>Top Student</th><th>Score</th><th>%</th><th>Grade</th>'
+      + '</tr></thead><tbody>'
+      + rows.map(function (r) {
+          return '<tr><td>' + (r.class || '—') + '</td><td>' + r.subject + '</td>'
+            + '<td><strong>' + (r.studentName || '') + '</strong></td>'
+            + '<td>' + r.totalScore + '/100</td><td>' + r.totalScore + '%</td>'
+            + '<td><span class="badge ' + gradeBadge(r.grade) + '">' + r.grade + '</span></td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+  } catch (err) { container.innerHTML = emptyHTML('⚠️', err.message); }
 }
 
 /* STUDENTS */
@@ -1536,6 +1585,8 @@ async function renderTeacherSubmissions(s) {
    needed. Only approved exams are offered, since a pending/rejected
    exam was never visible to students in the first place. */
 var msExamsCache = [];
+var msMissingCache = [];       // students missing from the currently-viewed exam
+var msMissingExamCache = null; // the exam that list belongs to
 
 async function renderTeacherMissingSubmissions(s) {
   var summary = $('missingSubmissionsSummary');
@@ -1575,6 +1626,7 @@ function msPopulateExamPicker() {
   if (stillValid) {
     picker.value = prevValue;
   } else {
+    msMissingCache = []; msMissingExamCache = null;
     var summary = $('missingSubmissionsSummary'); if (summary) summary.innerHTML = '';
     var list = $('missingSubmissionsList');
     if (list) list.innerHTML = emptyHTML('👆', 'Select an exam above to see who hasn\'t submitted yet.');
@@ -1588,6 +1640,7 @@ async function loadMissingSubmissions() {
   var list    = $('missingSubmissionsList');
 
   if (!examId) {
+    msMissingCache = []; msMissingExamCache = null;
     if (summary) summary.innerHTML = '';
     if (list) list.innerHTML = emptyHTML('👆', 'Select an exam above to see who hasn\'t submitted yet.');
     return;
@@ -1607,13 +1660,19 @@ async function loadMissingSubmissions() {
     var missing = roster.filter(function (st) { return !submittedIds[sid(st._id)]; });
     var submittedCount = roster.length - missing.length;
 
+    /* Cached so the download button doesn't need to re-fetch anything. */
+    msMissingCache = missing;
+    msMissingExamCache = exam;
+
     if (summary) {
       summary.innerHTML = '<div class="marking-class-summary"><div class="marking-class-summary-text">'
         + '<strong>' + submittedCount + '</strong> of <strong>' + roster.length + '</strong> student(s) in <strong>' + exam.targetClass + '</strong> have submitted'
         + (missing.length > 0
           ? ' · <span class="marking-summary-warning">' + missing.length + ' missing</span>'
           : ' · everyone has submitted 🎉')
-        + '</div></div>';
+        + '</div>'
+        + (missing.length > 0 ? '<button class="btn-secondary btn-sm" onclick="downloadMissingSubmissionsCSV()">⬇️ Download List</button>' : '')
+        + '</div>';
     }
 
     if (list) {
@@ -1632,6 +1691,41 @@ async function loadMissingSubmissions() {
   } catch (err) {
     if (list) list.innerHTML = emptyHTML('⚠️', err.message);
   }
+}
+
+/* Downloads the currently-displayed missing-submissions list as CSV.
+   Uses the cache populated by loadMissingSubmissions() — no extra
+   fetch needed. Same Blob/anchor download pattern as exportResultsCSV,
+   kept consistent with the rest of the app. */
+function downloadMissingSubmissionsCSV() {
+  if (!msMissingExamCache || !msMissingCache.length) {
+    showToast('Nothing to download — select an exam with missing submissions first.', 'info');
+    return;
+  }
+  var exam = msMissingExamCache;
+  var rows = [['#', 'Name', 'Username', 'Class', 'Subject', 'Term', 'Session', 'Exam']];
+  msMissingCache.forEach(function (st, i) {
+    rows.push([
+      i + 1,
+      ((st.firstName || '') + ' ' + (st.lastName || '')).trim(),
+      st.username || '',
+      st.class || '',
+      exam.subject || '',
+      exam.term || '',
+      exam.session || '',
+      exam.title || ''
+    ]);
+  });
+  var csv = rows.map(function (row) { return row.map(function (v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var safeClass = (exam.targetClass || 'class').replace(/[^a-z0-9]+/gi, '_');
+  var safeTerm  = (exam.term || 'term').replace(/[^a-z0-9]+/gi, '_');
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'Missing_Submissions_' + safeClass + '_' + safeTerm + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* THEORY MARKING */

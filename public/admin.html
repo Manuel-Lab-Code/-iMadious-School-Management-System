@@ -162,6 +162,27 @@
           <div id="adminOverviewStudents"></div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <span>🏆 Top Student by Subject &amp; Class</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="topStudentsSession" onchange="renderAdminTopStudents()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);font-size:.82rem;background:var(--surface);color:var(--text)">
+              <option value="">Session…</option>
+              <option>2024/2025</option>
+              <option>2025/2026</option>
+              <option>2026/2027</option>
+            </select>
+            <select id="topStudentsTerm" onchange="renderAdminTopStudents()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);font-size:.82rem;background:var(--surface);color:var(--text)">
+              <option value="">Term…</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+        </div>
+        <div id="topStudentsList" style="padding:16px 20px"></div>
+      </div>
     </section>
 
     <!-- ── STUDENTS MANAGEMENT ───────────────────────────── -->
