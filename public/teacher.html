@@ -47,6 +47,9 @@
       <a class="nav-item" onclick="showSection('submissions')" data-section="submissions">
         <span>📬</span><span>Student Submissions</span>
       </a>
+      <a class="nav-item" onclick="showSection('missing-submissions')" data-section="missing-submissions">
+        <span>📭</span><span>Missing Submissions</span>
+      </a>
       <a class="nav-item" onclick="showSection('marking')" data-section="marking">
         <span>✔️</span><span>Mark & Submit Results</span>
       </a>
@@ -395,6 +398,37 @@
         <p>View all student exam submissions for your exams</p>
       </div>
       <div id="submissionsList"></div>
+    </section>
+
+    <!-- ── MISSING SUBMISSIONS ───────────────────────────── -->
+    <section class="dash-section" id="section-missing-submissions">
+      <div class="section-header">
+        <h2>📭 Missing Submissions</h2>
+        <p>See which students in a class haven't submitted a specific exam yet</p>
+      </div>
+
+      <div class="card" style="padding:18px 20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+          <div class="form-group" style="margin:0">
+            <label>Term</label>
+            <select id="msTermFilter" onchange="msPopulateExamPicker()">
+              <option value="">All Terms</option>
+              <option>First Term</option>
+              <option>Second Term</option>
+              <option>Third Term</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Exam</label>
+            <select id="msExamPicker" onchange="loadMissingSubmissions()">
+              <option value="">Select an exam…</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="missingSubmissionsSummary"></div>
+      <div id="missingSubmissionsList"></div>
     </section>
 
     <!-- ── MARKING & RESULTS ─────────────────────────────── -->
