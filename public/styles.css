@@ -79,6 +79,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -161,6 +162,7 @@ table {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: auto;
   position: relative;
 }
@@ -2238,6 +2240,10 @@ table {
 }
 
 @media (max-width: 768px) {
+  .auth-page {
+    padding: 64px 16px 24px;
+  }
+
   .auth-wrapper {
     grid-template-columns: 1fr;
     min-height: auto;
@@ -2249,6 +2255,12 @@ table {
 
   .auth-panel {
     padding: 32px 24px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 
   .sidebar {
