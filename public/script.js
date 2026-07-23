@@ -1562,21 +1562,83 @@ async function renderTeacherMyExams(s) {
   } catch (err) { list.innerHTML = emptyHTML('⚠️', err.message); }
 }
 
+
+/* STUDENT SUBMISSIONS — cached client-side so the name search and class
+   filter below are instant on every keystroke and never re-hit the API. */
+var _teacherSubs = [];
+
 async function renderTeacherSubmissions(s) {
   var list = $('submissionsList'); if (!list) return;
   list.innerHTML = loadingHTML('Loading submissions…');
   try {
     var exams = await Api.get('/exams'), results = await Api.get('/results');
-    var myIds = exams.filter(function (e) { return e.createdByName === s.name || e.createdBy === s.username; }).map(function (e) { return String(e._id); });
-    var subs = results.filter(function (r) { return myIds.includes(sid(r.exam)); });
-    if (subs.length === 0) { list.innerHTML = emptyHTML('📬', 'No submissions yet.'); return; }
-    list.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
-      + '<th>#</th><th>Student</th><th>Exam</th><th>Obj(20)</th><th>Theory(40)</th><th>Total</th><th>%</th><th>Grade</th><th>Status</th><th>Actions</th>'
-      + '</tr></thead><tbody>'
-      + subs.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td><td>' + (r.studentName || '') + '</td><td>' + (r.examTitle || '') + '</td><td>' + r.objScore + '/' + r.objTotal + '</td><td>' + (r.theoryScore !== null && r.theoryScore !== undefined ? r.theoryScore + '/' + r.theoryTotal : '<span style="color:var(--text-3)">Pending</span>') + '</td><td><strong>' + r.totalScore + '/' + r.grandTotal + '</strong></td><td>' + r.percent + '%</td><td><span class="badge ' + gradeBadge(r.grade) + '">' + r.grade + '</span></td><td><span class="badge badge-' + r.status + '">' + cap(r.status) + '</span></td><td><button class="btn-secondary btn-sm" onclick="openScoreEditor(\'' + r._id + '\')">✏️ Edit Score</button></td></tr>'; }).join('')
-      + '</tbody></table></div>';
+    var myExams = exams.filter(function (e) { return e.createdByName === s.name || e.createdBy === s.username; });
+    var myIds = myExams.map(function (e) { return String(e._id); });
+
+    /* Results don't carry class directly — look it up from the exam
+       they belong to (already fetched above, so no extra API call). */
+    var classByExamId = {};
+    myExams.forEach(function (e) { classByExamId[String(e._id)] = e.targetClass || ''; });
+
+    _teacherSubs = results
+      .filter(function (r) { return myIds.includes(sid(r.exam)); })
+      .map(function (r) { return Object.assign({}, r, { targetClass: classByExamId[sid(r.exam)] || '' }); });
+
+    populateSubmissionClassFilter();
+    renderSubmissionRows(_teacherSubs);
   } catch (err) { list.innerHTML = emptyHTML('⚠️', err.message); }
 }
+
+/* Renders a given subset of _teacherSubs — shared by the initial load
+   and every subsequent search/class-filter pass in filterTeacherSubmissions(). */
+function renderSubmissionRows(subs) {
+  var list = $('submissionsList'); if (!list) return;
+  if (_teacherSubs.length === 0) { list.innerHTML = emptyHTML('📬', 'No submissions yet.'); return; }
+  if (subs.length === 0) { list.innerHTML = emptyHTML('🔍', 'No submissions match your search.'); return; }
+  list.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+    + '<th>#</th><th>Student</th><th>Class</th><th>Exam</th><th>Obj(20)</th><th>Theory(40)</th><th>Total</th><th>%</th><th>Grade</th><th>Status</th><th>Actions</th>'
+    + '</tr></thead><tbody>'
+    + subs.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td><td>' + escHtml(r.studentName || '') + '</td><td>' + escHtml(r.targetClass || '—') + '</td><td>' + escHtml(r.examTitle || '') + '</td><td>' + r.objScore + '/' + r.objTotal + '</td><td>' + (r.theoryScore !== null && r.theoryScore !== undefined ? r.theoryScore + '/' + r.theoryTotal : '<span style="color:var(--text-3)">Pending</span>') + '</td><td><strong>' + r.totalScore + '/' + r.grandTotal + '</strong></td><td>' + r.percent + '%</td><td><span class="badge ' + gradeBadge(r.grade) + '">' + r.grade + '</span></td><td><span class="badge badge-' + r.status + '">' + cap(r.status) + '</span></td><td><button class="btn-secondary btn-sm" onclick="openScoreEditor(\'' + r._id + '\')">✏️ Edit Score</button></td></tr>'; }).join('')
+    + '</tbody></table></div>';
+}
+
+/* Only lists classes this teacher actually has submissions for —
+   keeps the dropdown short and always accurate to real data. */
+function populateSubmissionClassFilter() {
+  var select = $('teacherSubClassFilter'); if (!select) return;
+  var prevValue = select.value;
+  var classes = Array.from(new Set(_teacherSubs.map(function (r) { return r.targetClass; }).filter(Boolean))).sort();
+  select.innerHTML = '<option value="">All Classes</option>'
+    + classes.map(function (c) { return '<option value="' + escHtml(c) + '">' + escHtml(c) + '</option>'; }).join('');
+  if (classes.includes(prevValue)) select.value = prevValue;
+}
+
+/* Search-by-name + class filter — pure client-side against the cache,
+   so results update instantly with no loading state or network round-trip. */
+function filterTeacherSubmissions() {
+  var q = getVal('teacherSubSearch').trim().toLowerCase();
+  var cls = getVal('teacherSubClassFilter');
+  renderSubmissionRows(_teacherSubs.filter(function (r) {
+    var matchesName = !q || (r.studentName || '').toLowerCase().includes(q);
+    var matchesClass = !cls || r.targetClass === cls;
+    return matchesName && matchesClass;
+  }));
+}
+// async function renderTeacherSubmissions(s) {
+//   var list = $('submissionsList'); if (!list) return;
+//   list.innerHTML = loadingHTML('Loading submissions…');
+//   try {
+//     var exams = await Api.get('/exams'), results = await Api.get('/results');
+//     var myIds = exams.filter(function (e) { return e.createdByName === s.name || e.createdBy === s.username; }).map(function (e) { return String(e._id); });
+//     var subs = results.filter(function (r) { return myIds.includes(sid(r.exam)); });
+//     if (subs.length === 0) { list.innerHTML = emptyHTML('📬', 'No submissions yet.'); return; }
+//     list.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+//       + '<th>#</th><th>Student</th><th>Exam</th><th>Obj(20)</th><th>Theory(40)</th><th>Total</th><th>%</th><th>Grade</th><th>Status</th><th>Actions</th>'
+//       + '</tr></thead><tbody>'
+//       + subs.map(function (r, i) { return '<tr><td>' + (i + 1) + '</td><td>' + (r.studentName || '') + '</td><td>' + (r.examTitle || '') + '</td><td>' + r.objScore + '/' + r.objTotal + '</td><td>' + (r.theoryScore !== null && r.theoryScore !== undefined ? r.theoryScore + '/' + r.theoryTotal : '<span style="color:var(--text-3)">Pending</span>') + '</td><td><strong>' + r.totalScore + '/' + r.grandTotal + '</strong></td><td>' + r.percent + '%</td><td><span class="badge ' + gradeBadge(r.grade) + '">' + r.grade + '</span></td><td><span class="badge badge-' + r.status + '">' + cap(r.status) + '</span></td><td><button class="btn-secondary btn-sm" onclick="openScoreEditor(\'' + r._id + '\')">✏️ Edit Score</button></td></tr>'; }).join('')
+//       + '</tbody></table></div>';
+//   } catch (err) { list.innerHTML = emptyHTML('⚠️', err.message); }
+// }
 
 /* MISSING SUBMISSIONS — which students in a class haven't submitted a
    given (approved) exam yet. Composed entirely from existing endpoints:

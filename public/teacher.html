@@ -397,6 +397,14 @@
         <h2>📬 Student Submissions</h2>
         <p>View all student exam submissions for your exams</p>
       </div>
+      <div class="table-controls">
+        <input type="text" id="teacherSubSearch" placeholder="🔍  Search by student name…"
+          oninput="filterTeacherSubmissions()" class="search-input" aria-label="Search submissions by student name" />
+        <select id="teacherSubClassFilter" onchange="filterTeacherSubmissions()" class="filter-select"
+          aria-label="Filter submissions by class">
+          <option value="">All Classes</option>
+        </select>
+      </div>
       <div id="submissionsList"></div>
     </section>
 
