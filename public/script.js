@@ -1315,40 +1315,135 @@ async function saveFee(e) {
   catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 
-/* ADMIN TEST SCORE RELEASE */
+/* ADMIN TEST SCORE RELEASE
+   _testScores is the raw cache fetched once per section-open; the
+   status tabs and the class/subject dropdowns all filter this same
+   cache client-side afterwards, so switching tabs or filters never
+   needs to re-hit the API. */
+var _testScores = [];
 var _adminTsFilter = 'pending';
+
 async function renderAdminTestScores(filter) {
   _adminTsFilter = filter || 'pending';
   var cont = $('adminTestScoresList'); if (!cont) return;
   cont.innerHTML = loadingHTML('Loading test scores…');
   try {
-    var scores = await Api.get('/test-scores');
-    var shown = _adminTsFilter === 'all' ? scores : scores.filter(function (ts) {
-      return _adminTsFilter === 'pending' ? !ts.released : ts.released;
-    });
-    if (shown.length === 0) { cont.innerHTML = emptyHTML('📝', 'No test scores in this category.'); return; }
-    cont.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
-      + '<th>Student</th><th>Class</th><th>Subject</th><th>Session</th><th>Term</th><th>Score/40</th><th>Teacher</th><th>Status</th><th>Action</th>'
-      + '</tr></thead><tbody>'
-      + shown.map(function (ts) {
-        var s = ts.student || {};
-        return '<tr><td><strong>' + (s.firstName || ts.studentName || '') + ' ' + (s.lastName || '') + '</strong></td>'
-          + '<td>' + (s.class || '—') + '</td>'
-          + '<td>' + ts.subject + '</td><td>' + ts.session + '</td><td>' + ts.term + '</td>'
-          + '<td><strong>' + ts.score + '/40</strong></td>'
-          + '<td>' + (ts.enteredByName || '') + '</td>'
-          + '<td><span class="badge ' + (ts.released ? 'badge-approved' : 'badge-pending') + '">' + (ts.released ? 'Released' : 'Pending') + '</span></td>'
-          + '<td>' + (ts.released ? '—' : '<button class="btn-success btn-sm" onclick="releaseTestScore(\'' + ts._id + '\',\'' + sid(ts.student) + '\')">📤 Release</button>') + '</td></tr>';
-      }).join('') + '</tbody></table></div>';
+    _testScores = await Api.get('/test-scores');
+    applyTestScoreFilters();
   } catch (err) { cont.innerHTML = emptyHTML('⚠️', err.message); }
 }
-function filterTestScores(filter, btn) { document.querySelectorAll('#section-test-release .tab-btn').forEach(function (b) { b.classList.remove('active'); }); if (btn) btn.classList.add('active'); renderAdminTestScores(filter); }
+
+/* Status-tab click handler — filters the existing cache, no refetch. */
+function filterTestScores(filter, btn) {
+  document.querySelectorAll('#section-test-release .tab-btn').forEach(function (b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  _adminTsFilter = filter || 'pending';
+  applyTestScoreFilters();
+}
+
+/* Class/Subject dropdown handler. */
+function filterTestScoresByClassSubject() { applyTestScoreFilters(); }
+
+/* Combines status tab + class + subject into a single filter pass,
+   then hands the result to renderTestScoreRows(). Class comparison
+   falls back to the student's current class if the score itself
+   wasn't tagged with one, matching the same fallback already used
+   for Subject Results. */
+function applyTestScoreFilters() {
+  var cls = getVal('tsClassFilter') || '';
+  var subject = getVal('tsSubjectFilter') || '';
+  var shown = _testScores.filter(function (ts) {
+    var s = ts.student || {};
+    var matchStatus = _adminTsFilter === 'all' || (_adminTsFilter === 'pending' ? !ts.released : ts.released);
+    var matchCls = !cls || (ts.class || s.class || '') === cls;
+    var matchSubj = !subject || ts.subject === subject;
+    return matchStatus && matchCls && matchSubj;
+  });
+  renderTestScoreRows(shown);
+}
+
+/* Pure render of whatever subset applyTestScoreFilters() computed —
+   also used right after a delete, so no full refetch is needed. */
+function renderTestScoreRows(shown) {
+  var cont = $('adminTestScoresList'); if (!cont) return;
+  if (_testScores.length === 0) { cont.innerHTML = emptyHTML('📝', 'No test scores yet.'); return; }
+  if (shown.length === 0) { cont.innerHTML = emptyHTML('🔍', 'No test scores match your filters.'); return; }
+  cont.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr>'
+    + '<th>Student</th><th>Class</th><th>Subject</th><th>Session</th><th>Term</th><th>Score/40</th><th>Teacher</th><th>Status</th><th>Action</th>'
+    + '</tr></thead><tbody>'
+    + shown.map(function (ts) {
+      var s = ts.student || {};
+      return '<tr><td><strong>' + escHtml((s.firstName || ts.studentName || '') + ' ' + (s.lastName || '')) + '</strong></td>'
+        + '<td>' + escHtml(ts.class || s.class || '—') + '</td>'
+        + '<td>' + escHtml(ts.subject) + '</td><td>' + escHtml(ts.session) + '</td><td>' + escHtml(ts.term) + '</td>'
+        + '<td><strong>' + ts.score + '/40</strong></td>'
+        + '<td>' + escHtml(ts.enteredByName || '') + '</td>'
+        + '<td><span class="badge ' + (ts.released ? 'badge-approved' : 'badge-pending') + '">' + (ts.released ? 'Released' : 'Pending') + '</span></td>'
+        + '<td style="display:flex;gap:6px;flex-wrap:wrap">'
+        + (ts.released ? '' : '<button class="btn-success btn-sm" onclick="releaseTestScore(\'' + ts._id + '\',\'' + sid(ts.student) + '\')">📤 Release</button>')
+        + '<button class="btn-danger btn-sm" onclick="deleteTestScore(\'' + ts._id + '\')" title="Delete this test score">🗑️</button>'
+        + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
 async function releaseTestScore(tsId, studentId) {
   try {
     await Api.put('/test-scores/' + tsId + '/release', {});
     await addNotification(studentId, 'Your test score has been released. Check your Academic Report.');
-    showToast('Test score released!', 'success'); renderAdminTestScores(_adminTsFilter);
+    showToast('Test score released!', 'success');
+    var ts = _testScores.find(function (t) { return t._id === tsId; });
+    if (ts) ts.released = true;
+    applyTestScoreFilters();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* Deletes a single unwanted test score. Uses the existing single-item
+   DELETE /test-scores/:id endpoint, which was already admin-only and
+   tenant-scoped server-side — no backend changes needed for this. */
+function deleteTestScore(tsId) {
+  confirm2('Delete Test Score', 'Remove this test score permanently? The teacher will need to re-enter it if this was a mistake.', async function () {
+    try {
+      await Api.delete('/test-scores/' + tsId);
+      _testScores = _testScores.filter(function (t) { return t._id !== tsId; });
+      applyTestScoreFilters();
+      showToast('Test score deleted.', 'success');
+    } catch (err) { showToast('Error: ' + err.message, 'error'); }
+  });
+}
+
+/* Deletes every test score currently visible under the active status
+   tab + class + subject filters. Loops the same single-item DELETE
+   endpoint above rather than adding a new bulk-delete-by-filter route —
+   a per-item loop is easier to audit and can't accidentally reach
+   outside of what's actually shown on screen. */
+async function bulkDeleteFilteredTestScores() {
+  var cls = getVal('tsClassFilter') || '';
+  var subject = getVal('tsSubjectFilter') || '';
+  var toDelete = _testScores.filter(function (ts) {
+    var s = ts.student || {};
+    var matchStatus = _adminTsFilter === 'all' || (_adminTsFilter === 'pending' ? !ts.released : ts.released);
+    var matchCls = !cls || (ts.class || s.class || '') === cls;
+    var matchSubj = !subject || ts.subject === subject;
+    return matchStatus && matchCls && matchSubj;
+  });
+
+  if (toDelete.length === 0) { showToast('Nothing to delete — no test scores match your filters.', 'info'); return; }
+
+  var desc = (cls || 'All Classes') + ' · ' + (subject || 'All Subjects') + ' · ' + cap(_adminTsFilter);
+  confirm2(
+    'Delete ' + toDelete.length + ' Test Score(s)',
+    'This permanently removes ' + toDelete.length + ' test score(s) matching: ' + desc + '. Teachers will need to re-enter any that were removed by mistake. This cannot be undone.',
+    async function () {
+      var deletedIds = {}, deleted = 0, errors = 0;
+      for (var i = 0; i < toDelete.length; i++) {
+        try { await Api.delete('/test-scores/' + toDelete[i]._id); deletedIds[toDelete[i]._id] = true; deleted++; }
+        catch (err) { errors++; console.error('[bulkDeleteFilteredTestScores]', err.message); }
+      }
+      _testScores = _testScores.filter(function (t) { return !deletedIds[t._id]; });
+      applyTestScoreFilters();
+      showToast('🗑️ Deleted ' + deleted + ' test score(s)' + (errors ? ' ⚠️ ' + errors + ' failed' : ''), errors ? 'error' : 'success');
+    }
+  );
 }
 
 /* ═══ ADMIN COMPOUND RESULTS ══════════════════════════════ */

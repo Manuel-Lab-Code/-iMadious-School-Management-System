@@ -328,6 +328,40 @@
         <button class="tab-btn" onclick="filterTestScores('released',this)">✅ Released</button>
         <button class="tab-btn" onclick="filterTestScores('all',this)">📋 All</button>
       </div>
+
+      <div class="table-controls">
+        <select id="tsClassFilter" onchange="filterTestScoresByClassSubject()" class="filter-select"
+          aria-label="Filter test scores by class">
+          <option value="">All Classes</option>
+          <option value="JSS1">JSS 1</option>
+          <option value="JSS2">JSS 2</option>
+          <option value="JSS3">JSS 3</option>
+          <option value="SSS1">SSS 1</option>
+          <option value="SSS2">SSS 2</option>
+          <option value="SSS3">SSS 3</option>
+        </select>
+        <select id="tsSubjectFilter" onchange="filterTestScoresByClassSubject()" class="filter-select"
+          aria-label="Filter test scores by subject">
+          <option value="">All Subjects</option>
+          <option>Mathematics</option>
+          <option>English Language</option>
+          <option>Biology</option>
+          <option>Chemistry</option>
+          <option>Physics</option>
+          <option>Geography</option>
+          <option>History</option>
+          <option>Economics</option>
+          <option>Government</option>
+          <option>Literature</option>
+          <option>Agricultural Science</option>
+          <option>Computer Science</option>
+        </select>
+        <button class="btn-danger btn-sm" onclick="bulkDeleteFilteredTestScores()"
+          title="Deletes every test score currently shown below">
+          🗑️ Delete All Filtered
+        </button>
+      </div>
+
       <div id="adminTestScoresList"></div>
     </section>
 
@@ -366,13 +400,22 @@
             <label>Class</label>
             <select id="srClassFilter" onchange="filterSubjectResults()">
               <option value="">All Classes</option>
+              <option value="JSS1">JSS 1</option>
+              <option value="JSS2">JSS 2</option>
+              <option value="JSS3">JSS 3</option>
+              <option value="SSS1">SSS 1</option>
+              <option value="SSS2">SSS 2</option>
+              <option value="SSS3">SSS 3</option>
+            </select>
+            <!-- <select id="srClassFilter" onchange="filterSubjectResults()">
+              <option value="">All Classes</option>
               <option>JSS1</option>
               <option>JSS2</option>
               <option>JSS3</option>
               <option>SSS1</option>
               <option>SSS2</option>
               <option>SSS3</option>
-            </select>
+            </select> -->
           </div>
           <div class="form-group" style="margin:0">
             <label>Subject</label>
