@@ -1352,7 +1352,41 @@ async function releaseTestScore(tsId, studentId) {
 }
 
 /* ═══ ADMIN COMPOUND RESULTS ══════════════════════════════ */
+// var _allSubjectResults = [];
+// async function loadAdminSubjectResults() {
+//   var cont = $('subjectResultsList'); if (!cont) return;
+//   cont.innerHTML = loadingHTML('Loading compound results…');
+//   try {
+//     _allSubjectResults = await Api.get('/subject-results');
+//     filterSubjectResults();
+//   } catch (err) { cont.innerHTML = emptyHTML('⚠️', err.message); }
+// }
+// function filterSubjectResults() {
+//   var cont = $('subjectResultsList'); if (!cont || !_allSubjectResults) return;
+//   var q = (getVal('srStudentFilter') || '').toLowerCase();
+//   var session = getVal('srSessionFilter') || '';
+//   var term = getVal('srTermFilter') || '';
+//   var cls = getVal('srClassFilter') || '';
+//   var subject = getVal('srSubjectFilter') || '';
+//   var status = getVal('srStatusFilter') || '';
+//   var filtered = _allSubjectResults.filter(function (r) {
+//     var s = r.student || {};
+//     var name = (s.firstName || r.studentName || '') + ' ' + (s.lastName || '');
+//     var matchQ = !q || name.toLowerCase().includes(q) || (s.username || '').toLowerCase().includes(q);
+//     var matchSess = !session || r.session === session;
+//     var matchTerm = !term || r.term === term;
+//     var matchCls = !cls || (r.class || s.class || '') === cls;
+//     var matchSubj = !subject || r.subject === subject;
+//     var matchStatus = !status || (status === 'released' ? r.released : !r.released);
+//     return matchQ && matchSess && matchTerm && matchCls && matchSubj && matchStatus;
+//   });
+
 var _allSubjectResults = [];
+/* Mirrors whatever filterSubjectResults() last computed — this is what
+   exportResultsCSV() downloads, so the file always matches what's on
+   screen (by class, subject, session, term, student, or status). */
+var _filteredSubjectResults = [];
+
 async function loadAdminSubjectResults() {
   var cont = $('subjectResultsList'); if (!cont) return;
   cont.innerHTML = loadingHTML('Loading compound results…');
@@ -1381,6 +1415,13 @@ function filterSubjectResults() {
     var matchStatus = !status || (status === 'released' ? r.released : !r.released);
     return matchQ && matchSess && matchTerm && matchCls && matchSubj && matchStatus;
   });
+
+  /* Keep the export cache in sync with the screen on every filter pass —
+     set before the empty-state early return below so a "no matches"
+     filter combo correctly exports nothing rather than stale data. */
+  _filteredSubjectResults = filtered;
+
+  /* Update summary stats */
 
   /* Update summary stats */
   var uniqueStudents = new Set(filtered.map(function (r) { return sid(r.student); })).size;
@@ -1485,17 +1526,25 @@ async function bulkReleaseSubjectResults() {
   });
 }
 
+/* Exports whatever filterSubjectResults() last put on screen — so
+   picking a Class and/or Subject above and clicking Export gives you
+   just that class/subject, not the whole school. */
 function exportResultsCSV() {
-  if (!_allSubjectResults.length) { showToast('No results to export.', 'info'); return; }
+  if (!_filteredSubjectResults.length) { showToast('No results to export — try widening your filters.', 'info'); return; }
   var rows = [['Student', 'Class', 'Subject', 'Session', 'Term', 'Obj(20)', 'Theory(40)', 'Test(40)', 'Total(100)', 'Grade', 'Remark', 'Status']];
-  _allSubjectResults.forEach(function (r) {
+  _filteredSubjectResults.forEach(function (r) {
     var s = r.student || {};
     rows.push([(s.firstName || r.studentName || '') + ' ' + (s.lastName || ''), r.class || (s.class || ''), r.subject, r.session, r.term, r.objScore, r.theoryScore, r.testScore, r.totalScore, r.grade, r.remark, r.released ? 'Released' : 'Pending']);
   });
   var csv = rows.map(function (row) { return row.map(function (v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
   var blob = new Blob([csv], { type: 'text/csv' });
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href = url; a.download = 'EduPortal_Results.csv'; a.click();
+  var safeClass = (getVal('srClassFilter') || 'AllClasses').replace(/[^a-z0-9]+/gi, '_');
+  var safeSubject = (getVal('srSubjectFilter') || 'AllSubjects').replace(/[^a-z0-9]+/gi, '_');
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'EduPortal_Results_' + safeClass + '_' + safeSubject + '.csv';
+  a.click();
   URL.revokeObjectURL(url);
 }
 
